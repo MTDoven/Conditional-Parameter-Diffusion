@@ -15,7 +15,7 @@ def sample(**config):
         ch_mult=config["channel_mult"],
         attn=config["attn"],
         num_res_blocks=config["num_res_blocks"],
-        dropout=config["dropout"],)
+        dropout=0.,)
     base_model_dict = torch.load(config["BaseDDPM_path"])
     lora_param_dict = torch.load(config["LoRADDPM_path"])
     unet.load_state_dict({**base_model_dict, **lora_param_dict})
@@ -55,28 +55,29 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:3",
         # path setting
-        "BaseDDPM_path": "./CheckpointBaseDDPM/Base.pt",
-        "LoRADDPM_path": "./CheckpointLoRADDPM/lora.pt",
-        "save_sampled_images_path": False,
+        "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
+        "LoRADDPM_path": "./CheckpointGen/0003.pt",  # "./CheckpointLoRADDPM/lora_class_0.pt",
+        "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
         "channel": 128,
         "channel_mult": [1, 2, 3, 4],
         "attn": [2],
         "num_res_blocks": 2,
-        "img_size": 224,
+        "img_size": 32,
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 4,
+        "batch_size": 100,
         # variable setting
         "label": 0,
     }
 
     images = sample(**config)
-    top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
-    print("top1_accuracy", top1_accuracy, "\n"
-          "top5_accuracy", top5_accuracy, "\n"
-          "mean_probability", mean_probability)
+    result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
+    print("result:", result, "\n"
+          "top1_accuracy:", top1_accuracy, "\n"
+          "top5_accuracy:", top5_accuracy, "\n"
+          "mean_probability:", mean_probability)

@@ -18,7 +18,8 @@ if __name__ == "__main__":
         "dataset": ClassIndex2ParamDataset,
         "UNet_path": "./CheckpointDDPM/UNet.pt",
         "VAE_path": "./CheckpointVAE/VAE.pt",
-        "path_to_loras": "path/to/loras",
+        "path_to_loras": "../DDPM-Classify-CIFAR100/CheckpointLoRADDPM",
+        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointGen",
         # model structure
         "d_model": 1024,
         "d_latent": 256,
@@ -48,22 +49,23 @@ if __name__ == "__main__":
     vae = vae.to(device)
     sampler = GaussianDiffusionSampler(
         model=unet,
-        beta_1=modelConfig["beta_1"],
-        beta_T=modelConfig["beta_T"],
-        T=modelConfig["T"])
+        beta_1=config["beta_1"],
+        beta_T=config["beta_T"],
+        T=config["T"])
     sampler = sampler.to(device)
-    dataset = config["dataset"]("path_to_loras")
+    dataset = config["dataset"](config["path_to_loras"])
 
 
     unet.eval()
     vae.eval()
     with torch.no_grad():
-        condition = torch.tensor([config["condition"] for _ in config["batch_size"]])
+        condition = torch.tensor([config["condition"] for _ in range(config["batch_size"])])
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
-        sampled = sampler(noise, condition)
-        result = vae.decode(sampled)
+        sampled = sampler(noise, condition.to(device))
+        gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])
 
-    dataset.save_param_dict(
-        save_path=config["path_to_save"],
-        parameters=gen_parameters,)
+    for i, param in enumerate(gen_parameters):
+        dataset.save_param_dict(
+            save_path=os.path.join(config["path_to_save"], f"{str(i).zfill(5)}.pt"),
+            parameters=param,)
     print(f"Generated parameters saved to {config['path_to_save']}")

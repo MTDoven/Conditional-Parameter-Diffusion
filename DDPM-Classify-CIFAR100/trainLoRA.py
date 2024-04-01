@@ -35,6 +35,7 @@ def train(**config):
         attn=config["attn"],
         num_res_blocks=config["num_res_blocks"],
         dropout=config["dropout"],)
+    unet.load_state_dict(torch.load(config["BaseDDPM_path"]), strict=False)
     unet = unet.to(device)
     for name, param in unet.named_parameters():
         if "lora" not in name:
@@ -52,7 +53,7 @@ def train(**config):
         weight_decay=config["weight_decay"],)
     cosineScheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer=optimizer,
-        T_max=config["epoch"],)
+        T_max=config["epochs"],)
     warmUpScheduler = GradualWarmupScheduler(
         optimizer=optimizer,
         multiplier=config["multiplier"],
@@ -85,9 +86,10 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # path setting
         "CIFAR100_path": "./CIFAR100",
+        "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         "result_save_path": "./CheckpointLoRADDPM/LoRA.pt",
         # model structure
         "T": 1000,
@@ -95,24 +97,27 @@ if __name__ == "__main__":
         "channel_mult": [1, 2, 3, 4],
         "attn": [2],
         "num_res_blocks": 2,
-        "img_size": 224,
+        "img_size": 32,
         # training setting
         "lr": 1e-4,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 100,
-        "batch_size": 4,
-        "num_workers": 8,
+        "epochs": 2000,
+        "batch_size": 32,
+        "num_workers":  16,
         "dropout": 0.15,
-        "weight_decay": 2e-6,
+        "weight_decay": 2e-5,
         # variable parameters
         "label": 0
     }
 
-    for label in range(100):
+    import warnings
+    warnings.filterwarnings("ignore", category=UserWarning)
+
+    for label in range(90,100,1):
         config["label"] = label
-        config["result_save_path"] = f"./CheckpointLoRADDPM/lora_class_{label}.pt",
+        config["result_save_path"] = f"./CheckpointLoRADDPM/lora_class_{label}.pt"
         print(f"start training lora_class_{label}.pt")
         train(**config)

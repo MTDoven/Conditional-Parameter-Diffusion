@@ -85,7 +85,7 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:6",
+        "device": "cuda:5",
         # path setting
         "CIFAR100_path": "./CIFAR100",
         "result_save_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
@@ -106,6 +106,6 @@ if __name__ == "__main__":
         "batch_size": 128,
         "num_workers": 32,
         "dropout": 0.15,
-        "weight_decay": 2e-4
+        "weight_decay": 2e-5
     }
     train(**config)

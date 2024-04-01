@@ -57,7 +57,7 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "save_sampled_images_path": "./wandb",
+        "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -68,13 +68,14 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 500,
+        "batch_size": 100,
         # variable setting
         "label": 33,
     }
 
     images = sample(**config)
-    top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
-    print("top1_accuracy:", top1_accuracy, "\n"
+    result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
+    print("result:", result, "\n"
+          "top1_accuracy:", top1_accuracy, "\n"
           "top5_accuracy:", top5_accuracy, "\n"
           "mean_probability:", mean_probability)

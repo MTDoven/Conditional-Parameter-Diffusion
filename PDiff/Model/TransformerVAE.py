@@ -8,6 +8,7 @@ class TransformerVAE(nn.Module):
     def __init__(self, d_model, d_latent, num_layers, nhead=8, dim_feedforward=2048):
         super().__init__()
         self.d_model = d_model
+        self.d_latent = d_latent
         self.num_parameters = None
         self.seq_length = None
 
@@ -37,7 +38,10 @@ class TransformerVAE(nn.Module):
         log_var = self.fc_var(result)
         return mu, log_var
 
-    def decode(self, z: Tensor):
+    def decode(self, z: Tensor, **kwargs):
+        if self.num_parameters is None:
+            self.num_parameters = kwargs["num_parameters"]
+            self.seq_length = self.num_parameters // self.d_model + 1
         assert len(z.shape) == 2
         batchsize, d_latent = z.shape
         result = self.fc_decode(z)
@@ -74,7 +78,10 @@ class TransformerVAE(nn.Module):
         return {'loss': loss, 'MSELoss': recons_loss.detach(), 'KLD': -kld_loss.detach()}
 
     def sample(self, num_samples, current_device, **kwargs):
-        z = torch.randn(num_samples, self.latent_dim)
+        if self.num_parameters is None:
+            self.num_parameters = kwargs["num_parameters"]
+            self.seq_length = self.num_parameters // self.d_model + 1
+        z = torch.randn(num_samples, self.d_latent)
         z = z.to(current_device)
         samples = self.decode(z)
         return samples

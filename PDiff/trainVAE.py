@@ -12,10 +12,10 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:6",
+        "device": "cuda:3",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "../DDPM/test",
+        "lora_data_path": "../DDPM-Classify-CIFAR100/CheckpointLoRADDPM",
         "result_save_path": "./CheckpointVAE/VAE.pt",
         # model structure
         "d_model": 1024,
@@ -26,8 +26,8 @@ if __name__ == "__main__":
         "weight_decay": 2e-6,
         "epochs": 200,
         "eta_min": 1e-7,
-        "batch_size": 4,
-        "num_workers": 0,
+        "batch_size": 64,
+        "num_workers": 16,
         "kld_weight": 0.005
     }
 

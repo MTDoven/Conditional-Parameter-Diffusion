@@ -16,6 +16,7 @@ def inference(images, **config):
     result = model(F.interpolate(images, size=(224, 224), mode="bilinear"))
     probabilities = torch.softmax(result, dim=1)
     _, top5_pred = torch.topk(probabilities, 5, dim=1)
+    result = torch.argmax(result, dim=-1)
 
     # Calculate top-1 and top-5 accuracy
     top1_accuracy = torch.eq(top5_pred[:, 0], config['label']).sum().item() / config['batch_size']
@@ -23,4 +24,4 @@ def inference(images, **config):
     # Calculate mean prob
     mean_probability = torch.mean(probabilities, dim=0)
     mean_probability = mean_probability[config["label"]].item()
-    return top1_accuracy, top5_accuracy, mean_probability
+    return result, top1_accuracy, top5_accuracy, mean_probability

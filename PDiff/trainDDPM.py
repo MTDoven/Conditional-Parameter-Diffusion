@@ -16,29 +16,28 @@ if __name__ == "__main__":
         "device": "cuda:3",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "../DDPM/test",
+        "lora_data_path": "../DDPM-Classify-CIFAR100/CheckpointLoRADDPM",
         "vae_checkpoint_path": "./CheckpointVAE/VAE.pt",
         "result_save_path": "./CheckpointDDPM/UNet.pt",
         # model structure
         "d_model": 1024,
         "d_latent": 256,
-        "num_layers": 2,
+        "num_layers": 6,
         "T": 1000,
         "num_class": 100,
         # training setting
         "lr": 0.001,
         "weight_decay": 2e-6,
-        "epochs": 200,
+        "epochs": 1000,
         "eta_min": 1e-7,
-        "batch_size": 4,
-        "num_workers": 0,
-        "kld_weight": 0.005,
+        "batch_size": 64,
+        "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0
     }
 
-    wandb.init(project="DDPM")
+    wandb.init(project="TransformerDDPM")
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],
@@ -76,7 +75,7 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             mu, log_var = vae.encode(param.to(device))
             x_0 = torch.cat([mu, log_var], dim=1)
-            loss = trainer(x_0)
+            loss = trainer(x_0, item.to(device))
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             optimizer.step()

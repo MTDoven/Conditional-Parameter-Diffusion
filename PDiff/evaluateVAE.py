@@ -16,8 +16,8 @@ if __name__ == "__main__":
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "VAE_path": "./CheckpointVAE/VAE.pt",
-        "path_to_loras": "./path_to_loras",
-        "path_to_save": "./backup/gen_lora.pt",
+        "path_to_loras": "../DDPM-Classify-CIFAR100/CheckpointLoRADDPM",
+        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointGen",
         # model structure
         "d_model": 1024,
         "d_latent": 256,
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                            num_layers=config["num_layers"],)
     model.load_state_dict(torch.load(config["VAE_path"]))
     model = model.to(device)
-    dataset = config["dataset"]("path_to_loras")
+    dataset = config["dataset"](config["path_to_loras"])
 
     # evaluate
     model.eval()
@@ -44,8 +44,9 @@ if __name__ == "__main__":
             current_device=config["device"],
             num_parameters=config["num_parameters"],)
 
-    dataset.save_param_dict(
-        save_path=config["path_to_save"],
-        parameters=gen_parameters,)
+    for i, param in enumerate(gen_parameters):
+        dataset.save_param_dict(
+            save_path=os.path.join(config["path_to_save"], f"{str(i).zfill(4)}.pt"),
+            parameters=param,)
     print(f"Generated parameters saved to {config['path_to_save']}")
 

@@ -7,6 +7,7 @@ import os
 
 class ClassIndex2ParamDataset(Dataset):
     def __init__(self, path_to_loras=DATA_PATH):
+        # print(path_to_loras)
         root, _, files = next(os.walk(path_to_loras))
         files_path = [os.path.join(root, file) for file in files if "lora" in file]
         # save structure
@@ -14,7 +15,7 @@ class ClassIndex2ParamDataset(Dataset):
         for name, param in torch.load(files_path[0]).items():
             assert "lora" in name
             self.param_structure.append((name, param.shape))
-        self.param_structure.sort(key=lambda x:x[0])
+        self.param_structure.sort(key=lambda x: x[0])
         # load lora parameters
         self.lora_parameters = {}
         for file in files_path:
@@ -40,7 +41,7 @@ class ClassIndex2ParamDataset(Dataset):
         param_dict_to_save = {}
         for name, shape in self.param_structure:
             length_to_cut = reduce(lambda x, y: x*y, shape)
-            param = parameters[:length_to_cut].copy()
+            param = parameters[:length_to_cut]
             param_dict_to_save[name] = param.view(shape)
             parameters = parameters[length_to_cut:]
         torch.save(param_dict_to_save, save_path)
