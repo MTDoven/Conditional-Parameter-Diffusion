@@ -54,7 +54,7 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:0",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         "save_sampled_images_path": "./temp",

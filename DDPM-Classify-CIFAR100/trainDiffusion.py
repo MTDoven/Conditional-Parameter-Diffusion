@@ -1,4 +1,3 @@
-
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -42,6 +41,7 @@ def train(**config):
         attn=config["attn"],
         num_res_blocks=config["num_res_blocks"],
         dropout=config["dropout"],)
+    unet.load_state_dict(torch.load("/home/nus-wk/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointBaseDDPM/BaseDDPM.pt"))
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(
         model=unet,
@@ -85,7 +85,7 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:0",
         # path setting
         "CIFAR100_path": "./CIFAR100",
         "result_save_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
@@ -97,14 +97,14 @@ if __name__ == "__main__":
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 1e-4,
+        "lr": 1e-5,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 200,
-        "batch_size": 128,
-        "num_workers": 32,
+        "epochs": 500,
+        "batch_size": 256,
+        "num_workers": 64,
         "dropout": 0.15,
         "weight_decay": 2e-5
     }

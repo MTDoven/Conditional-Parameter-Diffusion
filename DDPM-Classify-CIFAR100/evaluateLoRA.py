@@ -30,9 +30,9 @@ def sample(**config):
     param_number = 0
     for name, param in unet.named_parameters():
         if "lora" in name:
-            print(name, len(param.flatten()))
+            # print(name, len(param.flatten()))
             param_number += len(param.flatten())
-    print(f"model load weight done. Lora param: {param_number}")
+    # print(f"model load weight done. Lora param: {param_number}")
 
     # load model and evaluate
     unet.eval()
@@ -55,10 +55,10 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:3",
+        "device": "cuda:0",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointGen/0003.pt",  # "./CheckpointLoRADDPM/lora_class_0.pt",
+        "LoRADDPM_path": "CheckpointLoRAGen/lora_class_0.pt",  # "./CheckpointLoRAGen/0003.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
@@ -70,14 +70,24 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 100,
+        "batch_size": 200,
         # variable setting
         "label": 0,
     }
 
-    images = sample(**config)
-    result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
-    print("result:", result, "\n"
-          "top1_accuracy:", top1_accuracy, "\n"
-          "top5_accuracy:", top5_accuracy, "\n"
-          "mean_probability:", mean_probability)
+    top1_accuracys, top5_accuracys, mean_probabilitys = [], [], []
+    for i in range(100):
+        config["LoRADDPM_path"] = config["LoRADDPM_path"].split("/")[0] + f"/{str(i).zfill(4)}.pt"
+        config["label"] = i
+        images = sample(**config)
+        result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
+        print("result:", result, "\n"
+              "top1_accuracy:", top1_accuracy, "\n"
+              "top5_accuracy:", top5_accuracy, "\n"
+              "mean_probability:", mean_probability)
+        top1_accuracys.append(top1_accuracy)
+        top5_accuracys.append(top5_accuracy)
+        mean_probabilitys.append(mean_probability)
+    print("top1_accuracy:", sum(top1_accuracys) / len(top1_accuracys), "\n"
+          "top5_accuracy:", sum(top5_accuracys) / len(top5_accuracys), "\n"
+          "mean_probability:", sum(mean_probabilitys) / len(mean_probabilitys))

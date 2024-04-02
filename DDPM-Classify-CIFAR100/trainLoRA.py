@@ -62,6 +62,7 @@ def train(**config):
 
     # start training
     wandb.watch(unet)
+    saved_lora = 0
     for e in tqdm(range(config["epochs"])):
         for i, (images, labels) in enumerate(dataloader):
             optimizer.zero_grad()
@@ -73,14 +74,15 @@ def train(**config):
             wandb.log({"epoch": e,
                        "loss: ": loss.item(),
                        "lr": optimizer.state_dict()['param_groups'][0]["lr"]})
+            if e >= config["epochs"]-5:
+                state_dict = unet.state_dict()
+                lora_state_dict = {}
+                for name, param in state_dict.items():
+                    if "lora" in name:
+                        lora_state_dict[name] = param
+                torch.save(lora_state_dict, config["result_save_path"] + f"/lora_class{config['label']}_number{saved_lora}.pt")
+                saved_lora += 1
         warmUpScheduler.step()
-
-    state_dict = unet.cpu().state_dict()
-    lora_state_dict = {}
-    for name, param in state_dict.items():
-        if "lora" in name:
-            lora_state_dict[name] = param
-    torch.save(lora_state_dict, config["result_save_path"])
 
 
 if __name__ == "__main__":
@@ -90,7 +92,7 @@ if __name__ == "__main__":
         # path setting
         "CIFAR100_path": "./CIFAR100",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "./CheckpointLoRADDPM/LoRA.pt",
+        "result_save_path": "./CheckpointLoRADDPM",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -116,8 +118,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(90,100,1):
+    for label in range(90, 100, 1):
         config["label"] = label
-        config["result_save_path"] = f"./CheckpointLoRADDPM/lora_class_{label}.pt"
         print(f"start training lora_class_{label}.pt")
         train(**config)

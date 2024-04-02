@@ -1,5 +1,5 @@
-from Model.TransformerDDPM import UNet, GaussianDiffusionTrainer, GaussianDiffusionSampler
-from Model.TransformerVAE import TransformerVAE
+from Model.DDPM import UNet, GaussianDiffusionTrainer, GaussianDiffusionSampler
+from Model.VAE import TransformerVAE
 from Dataset import ClassIndex2ParamDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
@@ -19,13 +19,15 @@ if __name__ == "__main__":
         "UNet_path": "./CheckpointDDPM/UNet.pt",
         "VAE_path": "./CheckpointVAE/VAE.pt",
         "path_to_loras": "../DDPM-Classify-CIFAR100/CheckpointLoRADDPM",
-        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointGen",
-        # model structure
-        "d_model": 1024,
-        "d_latent": 256,
-        "num_layers": 2,
+        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
+        # ddpm structure
+        "num_layers_diff": 6,
         "T": 1000,
         "num_class": 100,
+        # model structure
+        "num_layers": 2,
+        "d_model": 1024,
+        "d_latent": 256,
         # training setting
         "batch_size": 4,
         "beta_1": 0.0001,
@@ -37,7 +39,7 @@ if __name__ == "__main__":
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],
-                num_layers=config["num_layers"],
+                num_layers=config["num_layers_diff"],
                 T=config["T"],
                 num_class=config["num_class"],)
     unet.load_state_dict(torch.load(config["UNet_path"]))
