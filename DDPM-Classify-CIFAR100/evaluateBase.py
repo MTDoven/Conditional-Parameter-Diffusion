@@ -70,7 +70,7 @@ if __name__ == "__main__":
         "beta_T": 0.02,
         "batch_size": 100,
         # variable setting
-        "label": 33,
+        "label": 22,
     }
 
     images = sample(**config)

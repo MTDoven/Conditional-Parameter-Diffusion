@@ -74,7 +74,7 @@ def train(**config):
             wandb.log({"epoch": e,
                        "loss: ": loss.item(),
                        "lr": optimizer.state_dict()['param_groups'][0]["lr"]})
-            if e >= config["epochs"]-5:
+            if e >= config["epochs"]-16:
                 state_dict = unet.state_dict()
                 lora_state_dict = {}
                 for name, param in state_dict.items():
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # path setting
         "CIFAR100_path": "./CIFAR100",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "./CheckpointLoRADDPM",
+        "result_save_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -106,9 +106,9 @@ if __name__ == "__main__":
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 2000,
+        "epochs": 3000,
         "batch_size": 32,
-        "num_workers":  16,
+        "num_workers": 4,
         "dropout": 0.15,
         "weight_decay": 2e-5,
         # variable parameters

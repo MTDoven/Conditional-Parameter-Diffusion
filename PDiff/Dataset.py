@@ -1,6 +1,7 @@
 DATA_PATH = "/path/to/test/dir"
 from functools import reduce
 from torch.utils.data import Dataset
+from tqdm.auto import tqdm
 import random
 import torch
 import os
@@ -15,10 +16,25 @@ class ClassIndex2ParamDataset(Dataset):
         self.length = len(self.files_path)
         # save structure
         self.param_structure = []
-        for name, param in torch.load(self.files_path[0]).items():
+        for name, param in torch.load(self.files_path[0], map_location="cpu").items():
             assert "lora" in name
             self.param_structure.append((name, param.shape))
         self.param_structure.sort(key=lambda x: x[0])
+        # # norm
+        # param_list = []
+        # for file_path in tqdm(self.files_path):
+        #     diction = torch.load(file_path, map_location="cpu")
+        #     this_param = []
+        #     for name, shape in self.param_structure:
+        #         param = diction[name]
+        #         assert param.shape == shape
+        #         this_param.append(param.flatten())
+        #     this_param = torch.cat(this_param, dim=0)
+        #     param_list.append(this_param)
+        # param_list = torch.stack(param_list)
+        # self.mean = torch.mean(param_list)
+        # self.std = torch.std(param_list)
+        # print("mean:", self.mean, "std:", self.std)
 
     def __len__(self):
         return self.length
@@ -26,15 +42,16 @@ class ClassIndex2ParamDataset(Dataset):
     def __getitem__(self, item):
         file_path = self.files_path[item]
         # load label
-        label = re.search(r'class(\d+)', file_path)
+        label = int(re.search(r'class(\d+)', file_path).group(1))
         # load param
-        diction = torch.load(file_path)
+        diction = torch.load(file_path, map_location="cpu")
         this_param = []
         for name, shape in self.param_structure:
             param = diction[name]
             assert param.shape == shape
-            this_param.append(param.cpu().flatten())
+            this_param.append(param.flatten())
         this_param = torch.cat(this_param, dim=0)
+        # this_param = self.transform(this_param)
         return torch.tensor(label), this_param
 
     def save_param_dict(self, parameters, save_path):
@@ -86,7 +103,7 @@ class Image2ParamDataset(Dataset):
         self.length = len(self.files_path)
         # save structure
         self.param_structure = []
-        for name, param in torch.load(self.files_path[0]).items():
+        for name, param in torch.load(self.files_path[0], map_location="cpu").items():
             assert "lora" in name
             self.param_structure.append((name, param.shape))
         self.param_structure.sort(key=lambda x: x[0])
@@ -101,7 +118,7 @@ class Image2ParamDataset(Dataset):
         image_dataset = self.one_class_dataset[label]
         image = image_dataset[random.randint(0, len(image_dataset)-1)]
         # load param
-        diction = torch.load(file_path)
+        diction = torch.load(file_path, map_location="cpu")
         this_param = []
         for name, shape in self.param_structure:
             param = diction[name]
