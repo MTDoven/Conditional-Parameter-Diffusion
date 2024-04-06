@@ -54,7 +54,7 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:5",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         "save_sampled_images_path": "./temp",
@@ -68,14 +68,24 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 100,
-        # variable setting
-        "label": 22,
+        "batch_size": 200,
+        # eval setting
+        "label": 0
     }
 
-    images = sample(**config)
-    result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
-    print("result:", result, "\n"
-          "top1_accuracy:", top1_accuracy, "\n"
-          "top5_accuracy:", top5_accuracy, "\n"
-          "mean_probability:", mean_probability)
+    top1_accuracys, top5_accuracys, mean_probabilitys = [], [], []
+    for i in range(100):
+        config["label"] = i
+        images = sample(**config)
+        result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
+        print(f"class{i}_result:", result, "\n"
+              "top1_accuracy:", top1_accuracy, "\n"
+              "top5_accuracy:", top5_accuracy, "\n"
+              "mean_probability:", mean_probability)
+        top1_accuracys.append(top1_accuracy)
+        top5_accuracys.append(top5_accuracy)
+        mean_probabilitys.append(mean_probability)
+    print("======================================================================")
+    print("top1_accuracy:", sum(top1_accuracys) / len(top1_accuracys), "\n"
+          "top5_accuracy:", sum(top5_accuracys) / len(top5_accuracys), "\n"
+          "mean_probability:", sum(mean_probabilitys) / len(mean_probabilitys))

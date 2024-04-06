@@ -15,12 +15,12 @@ if __name__ == "__main__":
         "device": "cuda:4",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "VAE_path": "./CheckpointVAE/VAE.pt",
+        "VAE_path": "./CheckpointVAE/VAE.pt.309",
         "path_to_loras": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # vae structure
-        "d_model": [32, 64, 128, 256, 512, 512, 8],
-        "d_latent": 256,
+        "d_model": [64, 128, 256, 512, 1024, 1024, 64],
+        "d_latent": 512,
         "num_parameters": 54912,
         "last_length": 429,
         "num_layers": -1,
@@ -42,7 +42,11 @@ if __name__ == "__main__":
     model.eval()
     with torch.no_grad():
         for i in range(100):
-            item, param = dataset[i]
+            for index in range(len(dataset)):
+                item, param = dataset[index]
+                if item == i:
+                    break
+            print("\r", item, end="")
             gen_parameter = model.generate(
                 x=param[None, :].to(device),
                 num_parameters=config["num_parameters"],)

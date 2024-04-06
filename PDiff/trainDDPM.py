@@ -1,5 +1,6 @@
-from Model.DDPM import UNet, GaussianDiffusionTrainer
-from Model.VAE import TransformerVAE
+from Model.DDPM import ODUNet as UNet
+from Model.DDPM import GaussianDiffusionTrainer
+from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
@@ -8,53 +9,61 @@ import torch
 from tqdm.auto import tqdm
 import os.path
 import wandb
+torch.backends.cudnn.enabled = False
 
 
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:3",
+        "device": "cuda:5",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "../DDPM-Classify-CIFAR100/CheckpointLoRADDPM",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE.pt",
+        "lora_data_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE.pt.299.299",
         "result_save_path": "./CheckpointDDPM/UNet.pt",
         # diffusion structure
-        "num_layers_diff": 6,
+        "num_channels": [64, 128, 256, 512],
         "T": 1000,
         "num_class": 100,
+        "num_layers_diff": -1,
         # vae structure
-        "num_layers": 6,
-        "d_model": 1024,
-        "d_latent": 1024,
+        "d_model": [64, 128, 256, 512, 1024, 1024, 64],
+        "d_latent": 512,
+        "num_parameters": 54912,
+        "last_length": 429,
+        "num_layers": -1,
         # training setting
         "lr": 0.001,
-        "weight_decay": 2e-6,
-        "epochs": 50000,
-        "eta_min": 1e-7,
+        "weight_decay": 0.0,
+        "epochs": 400,
+        "eta_min": 0.0,
         "batch_size": 64,
-        "num_workers": 16,
+        "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,
-        "clip_grad_norm": 1.0
+        "clip_grad_norm": 1.0,
+        "save_every": 20,
     }
 
-    wandb.init(project="TransformerDDPM")
+    wandb.init(project="OneDimDDPM-Final")
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],
-                num_layers=config["num_layers_diff"],
+                num_channels=config["num_channels"],
                 T=config["T"],
-                num_class=config["num_class"])
+                num_class=config["num_class"],
+                num_layers=config["num_layers_diff"],)
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(unet,
                                        beta_1=config["beta_1"],
                                        beta_T=config["beta_T"],
                                        T=config["T"])
     trainer = trainer.to(device)
-    vae = TransformerVAE(d_model=config["d_model"],
-                         d_latent=config["d_latent"],
-                         num_layers=config["num_layers"],)
+    vae = VAE(d_model=config["d_model"],
+              d_latent=config["d_latent"],
+              num_parameters=config["num_parameters"],
+              last_length=config["last_length"],
+              num_layers=config["num_layers"],)
     vae.load_state_dict(torch.load(config["vae_checkpoint_path"]))
     vae = vae.to(device)
     for name, param in vae.named_parameters():
@@ -76,7 +85,7 @@ if __name__ == "__main__":
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
             mu, log_var = vae.encode(param.to(device))
-            x_0 = torch.cat([mu, log_var], dim=1)
+            x_0 = vae.reparameterize(mu, log_var)
             loss = trainer(x_0, item.to(device))
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
@@ -85,6 +94,8 @@ if __name__ == "__main__":
                        "loss: ": loss.item(),
                        "lr": optimizer.state_dict()['param_groups'][0]["lr"],})
         scheduler.step()
+        if (e+1) % config["save_every"] == 0:
+            torch.save(unet.cpu().state_dict(), config["result_save_path"])
+            unet = unet.to(device)
 
-    torch.save(unet.cpu().state_dict(), config["result_save_path"])
     print("Finished Training...")

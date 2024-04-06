@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torch.nn import functional as F
 from torch.optim import AdamW, SGD
 from tqdm.auto import tqdm
+from torch.cuda.amp import autocast as autocast
 import os.path
 import torch
 import wandb
@@ -13,29 +14,31 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
         "result_save_path": "./CheckpointVAE/VAE.pt",
         # model structure
-        "d_model": [32, 64, 128, 256, 512, 512, 8],
-        "d_latent": 256,
+        "d_model": [64, 128, 256, 512, 1024, 1024, 64],
+        "d_latent": 512,
         "num_parameters": 54912,
         "last_length": 429,
         "num_layers": -1,
         # training setting
-        "lr": 0.001,
-        "weight_decay": 2e-6,
-        "epochs": 400,
+        "lr": 0.0002,
+        "weight_decay": 0.0,
+        "epochs": 600,
         "eta_min": 0.,
-        "batch_size": 32,
-        "clip_grad_norm": 1.0,
-        "num_workers": 16,
+        "batch_size": 64,
+        "num_workers": 32,
         "kld_weight": 0.0,
-        "kld_start_epoch": 200,
-        "kld_rise_rate": 0.0001,
-        "save_every": 20,
+        "kld_start_epoch": 300,
+        "kld_rise_rate": 0.0000003,
+        "save_every": 10,
+        "norm_weight": 0.0,
+        "norm_start_epoch": 60,
+        "norm_rise_rate": 0.0000008
     }
 
     wandb.init(config=config, project="VanillaVAE-Final")
@@ -58,25 +61,29 @@ if __name__ == "__main__":
                             num_workers=config["num_workers"],
                             pin_memory=True,
                             shuffle=True,)
+    scaler = torch.cuda.amp.GradScaler()
 
     wandb.watch(model)
     for e in tqdm(range(config["epochs"])):
         for condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            output = model(parameters)
-            losses = model.loss_function(*output, kld_weight=config["kld_weight"])
-            losses["loss"].backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), config["clip_grad_norm"])
-            optimizer.step()
+            with autocast(enabled=False):
+                output = model(parameters)
+                losses = model.loss_function(*output, kld_weight=config["kld_weight"], norm_weight=config["norm_weight"])
+            scaler.scale(losses["loss"]).backward()
+            scaler.step(optimizer)
+            scaler.update()
             wandb.log(losses)
 
         scheduler.step()
+        if ((e+1)>=config["norm_start_epoch"] or (e+1)>=config["kld_start_epoch"]) and (e+1)%config["save_every"]==0:
+            torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}.{e}")
+            model.to(device)
+        if (e+1) > config["norm_start_epoch"]:
+            config["norm_weight"] += config["norm_rise_rate"]
         if (e+1) > config["kld_start_epoch"]:
             config["kld_weight"] += config["kld_rise_rate"]
-            if (e+1) % config["save_every"] == 0:
-                torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
-                model.to(device)
 
     print("Finished Training...")
 

@@ -31,8 +31,14 @@ class BaseVAE(nn.Module):
     def loss_function(self, recons, input, mu, log_var, **kwargs):
         recons_loss = F.mse_loss(recons, input)
         kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
-        loss = recons_loss + kwargs['kld_weight'] * kld_loss
-        return {'loss': loss, 'MSELoss': recons_loss.detach(), 'KLD': kld_loss.detach()}
+        recons_norm = recons.norm(dim=1)
+        input_norm = input.norm(dim=1)
+        norm_loss = F.mse_loss(recons_norm, input_norm).mean()
+        loss = recons_loss + kwargs['kld_weight'] * kld_loss + kwargs["norm_weight"] * norm_loss
+        return {'loss': loss, 'MSELoss': recons_loss.detach(), 'KLD': kld_loss.detach(),
+                "recons_norm": recons_norm.mean().detach(),
+                "input_norm": input_norm.mean().detach(),
+                "norm_loss": norm_loss}
 
     def sample(self, num_samples, current_device, **kwargs):
         z = torch.randn(num_samples, self.latent_dim)
@@ -89,30 +95,35 @@ class OneDimVAE(BaseVAE):
         in_dim = 1
         for h_dim in d_model:
             modules.append(nn.Sequential(
-                nn.Conv1d(in_dim, h_dim, kernel_size=3, stride=2, padding=1),
+                nn.Conv1d(in_dim, h_dim, kernel_size=5, stride=2, padding=2),
                 nn.BatchNorm1d(h_dim),
                 nn.LeakyReLU()))
             in_dim = h_dim
         self.encoder = nn.Sequential(*modules)
-        self.to_latent = nn.Linear(self.last_length * d_model[-1], d_latent)
+        self.to_latent = nn.Sequential(
+            nn.Linear(self.last_length * d_model[-1], d_latent),
+            nn.LeakyReLU())
         self.fc_mu = nn.Linear(d_latent, d_latent)
         self.fc_var = nn.Linear(d_latent, d_latent)
 
         # Build Decoder
         modules = []
-        self.to_decode = nn.Linear(d_latent, self.last_length * d_model[-1])
+        self.to_decode = nn.Sequential(
+            nn.Linear(d_latent, d_latent),
+            nn.LeakyReLU(),
+            nn.Linear(d_latent, self.last_length * d_model[-1]))
         d_model.reverse()
         for i in range(len(d_model) - 1):
             modules.append(nn.Sequential(
-                nn.ConvTranspose1d(d_model[i], d_model[i+1], kernel_size=3, stride=2, padding=1, output_padding=1),
+                nn.ConvTranspose1d(d_model[i], d_model[i+1], kernel_size=5, stride=2, padding=2, output_padding=1),
                 nn.BatchNorm1d(d_model[i + 1]),
                 nn.LeakyReLU()))
         self.decoder = nn.Sequential(*modules)
         self.final_layer = nn.Sequential(
-            nn.ConvTranspose1d(d_model[-1], d_model[-1], kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.ConvTranspose1d(d_model[-1], d_model[-1], kernel_size=5, stride=2, padding=2, output_padding=1),
             nn.BatchNorm1d(d_model[-1]),
             nn.LeakyReLU(),
-            nn.Conv1d(d_model[-1], 1, kernel_size=3, stride=1, padding=1),
+            nn.Conv1d(d_model[-1], 1, kernel_size=5, stride=1, padding=2),
             nn.Tanh())
 
     def encode(self, input, **kwargs):

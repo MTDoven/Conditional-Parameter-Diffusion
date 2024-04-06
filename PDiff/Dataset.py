@@ -20,21 +20,6 @@ class ClassIndex2ParamDataset(Dataset):
             assert "lora" in name
             self.param_structure.append((name, param.shape))
         self.param_structure.sort(key=lambda x: x[0])
-        # # norm
-        # param_list = []
-        # for file_path in tqdm(self.files_path):
-        #     diction = torch.load(file_path, map_location="cpu")
-        #     this_param = []
-        #     for name, shape in self.param_structure:
-        #         param = diction[name]
-        #         assert param.shape == shape
-        #         this_param.append(param.flatten())
-        #     this_param = torch.cat(this_param, dim=0)
-        #     param_list.append(this_param)
-        # param_list = torch.stack(param_list)
-        # self.mean = torch.mean(param_list)
-        # self.std = torch.std(param_list)
-        # print("mean:", self.mean, "std:", self.std)
 
     def __len__(self):
         return self.length
