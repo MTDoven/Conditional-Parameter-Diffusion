@@ -153,27 +153,25 @@ class TransformerUNet(nn.Module):
 
 
 class ODUnetEncoder(nn.Module):
-    def __init__(self, in_dim_list, enc_channel_list, fold_rate, kernal_size):
+    def __init__(self, in_dim_list, enc_channel_list, kernel_size):
         super(ODUnetEncoder, self).__init__()
         self.in_dim_list = in_dim_list
         self.enc_channel_list = enc_channel_list
-        self.fold_rate = fold_rate
-        self.kernal_size = kernal_size
+        self.kernel_size = kernel_size
         encoder = nn.ModuleList()
         layer_num = len(in_dim_list)
         for i in range(layer_num):
-            layer = self.build_layer(in_dim_list[i], enc_channel_list[i], enc_channel_list[i + 1],
-                                     kernal_size, fold_rate)
+            layer = self.build_layer(in_dim_list[i], enc_channel_list[i], enc_channel_list[i + 1], kernel_size)
             encoder.append(layer)
         self.encoder = encoder
 
-    def build_layer(self, in_dim, in_channel, out_channel, kernel_size, fold_rate):
+    def build_layer(self, in_dim, in_channel, out_channel, kernel_size):
         layer = nn.Sequential(
             nn.InstanceNorm1d(in_dim),
-            nn.Conv1d(in_channel, out_channel, kernel_size, padding=1, stride=1),
+            nn.Conv1d(in_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.LeakyReLU(),
             nn.InstanceNorm1d(in_dim),
-            nn.Conv1d(out_channel, out_channel, kernel_size, padding=1, stride=fold_rate),
+            nn.Conv1d(out_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.LeakyReLU(), )
         return layer
 
@@ -185,28 +183,27 @@ class ODUnetEncoder(nn.Module):
         return encoder_output
 
 class ODUnetDecoder(nn.Module):
-    def __init__(self, in_dim_list, dec_channel_list, fold_rate, kernal_size):
+    def __init__(self, in_dim_list, dec_channel_list, kernel_size):
         super(ODUnetDecoder, self).__init__()
         self.in_dim_list = in_dim_list
         self.dec_channel_list = dec_channel_list
-        self.fold_rate = fold_rate
-        self.kernal_size = kernal_size
+        self.kernel_size = kernel_size
 
         decoder = nn.ModuleList()
         layer_num = len(in_dim_list)
         for i in range(layer_num):
             layer = self.build_layer(in_dim_list[i], dec_channel_list[i], dec_channel_list[i + 1],
-                                     kernal_size, fold_rate, last=(i == layer_num - 1))
+                                     kernel_size, last=(i == layer_num - 1))
             decoder.append(layer)
         self.decoder = decoder
 
-    def build_layer(self, in_dim, in_channel, out_channel, kernel_size, fold_rate, last=False):
+    def build_layer(self, in_dim, in_channel, out_channel, kernel_size, last=False):
         layer = nn.Sequential(
             nn.InstanceNorm1d(in_dim),
-            nn.Conv1d(in_channel, out_channel, kernel_size, padding=fold_rate, stride=1),
+            nn.Conv1d(in_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.LeakyReLU(),
             nn.InstanceNorm1d(in_dim),
-            nn.Conv1d(out_channel, out_channel, kernel_size, padding=1, stride=1),
+            nn.Conv1d(out_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.LeakyReLU() if not last else nn.Identity(), )
         return layer
 
@@ -221,7 +218,7 @@ class ODUnetDecoder(nn.Module):
 
 class ODUNet(nn.Module):
     def __init__(self, d_latent, num_channels, T, num_class,
-                 in_channel=1, fold_rate=1, kernal_size=3, **kwargs):
+                 in_channel=1, fold_rate=1, kernel_size=5, **kwargs):
         super(ODUNet, self).__init__()
 
         enc_channel_list = num_channels.copy()
@@ -232,8 +229,8 @@ class ODUNet(nn.Module):
         dec_dim_list = [d_latent // (fold_rate ** (4-i)) for i in range(len(dec_channel_list))]
         enc_channel_list = [in_channel] + enc_channel_list
         dec_channel_list = dec_channel_list + [in_channel]
-        self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, fold_rate, kernal_size)
-        self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, fold_rate, kernal_size)
+        self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
+        self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
         self.time_encode, self.class_encode = nn.ModuleList(), nn.ModuleList()
         for channel in num_channels:
             self.time_encode.append(nn.Embedding(T, channel))

@@ -15,14 +15,14 @@ torch.backends.cudnn.enabled = False
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
         "vae_checkpoint_path": "./CheckpointVAE/VAE.pt.299.299",
         "result_save_path": "./CheckpointDDPM/UNet.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 512],
+        "num_channels": [64, 128, 256, 512, 512, 512],
         "T": 1000,
         "num_class": 100,
         "num_layers_diff": -1,
@@ -45,6 +45,7 @@ if __name__ == "__main__":
         "save_every": 20,
     }
 
+    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
     wandb.init(project="OneDimDDPM-Final")
 
     device = config["device"]

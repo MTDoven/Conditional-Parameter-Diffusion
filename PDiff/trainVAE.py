@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
@@ -34,13 +34,14 @@ if __name__ == "__main__":
         "num_workers": 32,
         "kld_weight": 0.0,
         "kld_start_epoch": 300,
-        "kld_rise_rate": 0.0000003,
+        "kld_rise_rate": 0.00000001,
         "save_every": 10,
         "norm_weight": 0.0,
         "norm_start_epoch": 60,
         "norm_rise_rate": 0.0000008
     }
 
+    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
     wandb.init(config=config, project="VanillaVAE-Final")
 
     device = config["device"]
@@ -78,7 +79,7 @@ if __name__ == "__main__":
 
         scheduler.step()
         if ((e+1)>=config["norm_start_epoch"] or (e+1)>=config["kld_start_epoch"]) and (e+1)%config["save_every"]==0:
-            torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}.{e}")
+            torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
             model.to(device)
         if (e+1) > config["norm_start_epoch"]:
             config["norm_weight"] += config["norm_rise_rate"]
