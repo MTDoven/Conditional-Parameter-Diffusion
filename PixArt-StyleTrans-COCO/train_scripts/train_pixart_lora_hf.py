@@ -47,6 +47,8 @@ from diffusers.training_utils import compute_snr
 from diffusers.utils import check_min_version, is_wandb_available
 from diffusers.utils.import_utils import is_xformers_available
 
+os.environ['WANDB_API_KEY'] = "b8a4b0c7373c8bba8f3d13a2298cd95bf3165260"
+
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 check_min_version("0.25.0.dev0")
@@ -890,7 +892,7 @@ def main():
                         save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
                         accelerator.save_state(save_path)
 
-                        transformer_lora_state_dict = get_peft_model_state_dict(transformer)
+                        transformer_lora_state_dict = get_peft_model_state_dict(transformer.module)
 
                         StableDiffusionPipeline.save_lora_weights(
                             save_directory=save_path,
