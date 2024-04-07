@@ -30,3 +30,6 @@ plt.hist(temp, bins=200, density=True, alpha=0.6, color='g')
 plt.savefig("./show.jpg")
 
 
+
+
+
