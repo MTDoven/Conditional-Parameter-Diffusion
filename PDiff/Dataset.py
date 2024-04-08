@@ -1,4 +1,3 @@
-DATA_PATH = "/path/to/test/dir"
 from functools import reduce
 from torch.utils.data import Dataset
 from tqdm.auto import tqdm
@@ -6,10 +5,14 @@ import random
 import torch
 import os
 import re
+import torch
+from safetensors.torch import load_file, save_file
+from torchvision import transforms
+from PIL import Image
 
 
 class ClassIndex2ParamDataset(Dataset):
-    def __init__(self, path_to_loras=DATA_PATH):
+    def __init__(self, path_to_loras):
         # print(path_to_loras)
         root, _, files = next(os.walk(path_to_loras))
         self.files_path = [os.path.join(root, file) for file in files if "lora" in file]
@@ -50,34 +53,64 @@ class ClassIndex2ParamDataset(Dataset):
         torch.save(param_dict_to_save, save_path)
 
 
-class _OneClassDataset(Dataset):
-    def __init__(self, root, img_size, label):
-        dataset = CIFAR100(
-            root=root,
-            train=True,
-            download=True,
-            transform=transforms.Compose([
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            ]))
-        image_list = []
-        for image, this_label in dataset:
-            if this_label == label:
-                image_list.append(image)
-        self.resize = transforms.Resize(img_size, antialias=True)
-        self.image_list = image_list
-        self.label = torch.tensor(label)
+class Image2SafetensorsDataset(Dataset):
+    def __init__(self, path_to_loras, path_to_images, image_size=256):
+        self.path_to_images = path_to_images
+        root, dirs, _ = next(os.walk(path_to_loras))
+        self.files_path = [os.path.join(root, dir, "pytorch_lora_weights.safetensors")
+                           for dir in dirs if "lora" in dir]
+        self.length = len(self.files_path)
+        self.param_structure = []
+        for name, param in load_file(self.files_path[0], device='cpu').items():
+            assert "lora" in name, "included parameters not marked as lora."
+            self.param_structure.append((name, param.shape))
+        self.param_structure.sort(key=lambda x: x[0])
+        self.transfer = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize(image_size, antialias=True),
+            transforms.CenterCrop(image_size),
+            transforms.RandomHorizontalFlip(),
+        ])
 
     def __len__(self):
-        return len(self.image_list)
+        return self.length
 
     def __getitem__(self, item):
-        img = self.image_list[item]
-        img = self.resize(img)
-        return img, self.label
+        file_path = self.files_path[item]
+        # load image
+        label = re.search(r'class(\d+)', file_path).group(1)
+        dir = None
+        for dir in os.listdir(self.path_to_images):
+            if label in dir: break
+        image = random.choice(next(os.walk(os.path.join(self.path_to_images, dir)))[-1])
+        image = Image.open(os.path.join(self.path_to_images, dir, image)).convert("RGB")
+        image = self.transfer(image)
+        # load param
+        diction = load_file(file_path, device='cpu')
+        this_param = []
+        for name, shape in self.param_structure:
+            param = diction[name]
+            assert param.shape == shape
+            this_param.append(param.flatten())
+        this_param = torch.cat(this_param, dim=0)
+        return image, this_param
+
+    def save_param_dict(self, parameters, save_path):
+        assert len(parameters.shape) == 1
+        param_dict_to_save = {}
+        for name, shape in self.param_structure:
+            length_to_cut = reduce(lambda x, y: x*y, shape)
+            param = parameters[:length_to_cut]
+            param_dict_to_save[name] = param.view(shape)
+            parameters = parameters[length_to_cut:]
+        # TODO: to save safetensors in a folder like the dataset
+        save_file(param_dict_to_save, save_path)
 
 
 
 
-
+if __name__ == "__main__":
+    dataset = Image2SafetensorsDataset("/data/personal/nus-wk/cpdiff/datasets/PixArt-LoRA-Dataset",
+                                       "/data/personal/nus-wk/cpdiff/datasets/Styles")
+    print(dataset[0])
+    print(dataset[0][0].mean())
