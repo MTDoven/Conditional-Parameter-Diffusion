@@ -275,7 +275,7 @@ Following the `PixArt + ControlNet` [training guidance](asset/docs/pixart_contro
 pip install peft==0.6.2
 
 accelerate launch --num_processes=1 --main_process_port=36667  train_scripts/trainLoRA.py --mixed_precision="fp16" \
-  --pretrained_model_name_or_path=PixArt-alpha/PixArt-XL-2-1024-MS \
+  --pretrained_model_name_or_path=PixArt-alpha/PixArt-XL-256 \
   --dataset_name=lambdalabs/pokemon-blip-captions --caption_column="text" \
   --resolution=1024 --random_flip \
   --train_batch_size=16 \
@@ -338,7 +338,7 @@ import torch
 from diffusers import PixArtAlphaPipeline, ConsistencyDecoderVAE, AutoencoderKL
 
 # You can replace the checkpoint id with "PixArt-alpha/PixArt-XL-2-512x512" too.
-pipe = PixArtAlphaPipeline.from_pretrained("PixArt-alpha/PixArt-XL-2-1024-MS", torch_dtype=torch.float16, use_safetensors=True)
+pipe = PixArtAlphaPipeline.from_pretrained("PixArt-alpha/PixArt-XL-256", torch_dtype=torch.float16, use_safetensors=True)
 
 # If use DALL-E 3 Consistency Decoder
 # pipe.vae = ConsistencyDecoderVAE.from_pretrained("openai/consistency-decoder", torch_dtype=torch.float16)

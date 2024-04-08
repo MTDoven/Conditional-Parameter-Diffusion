@@ -13,7 +13,7 @@ import os
 import argparse
 
 
-pretrained_models = {'PixArt-XL-2-512x512.pth', 'PixArt-XL-2-1024-MS.pth'}
+pretrained_models = {'PixArt-XL-2-512x512.pth', 'PixArt-XL-256.pth'}
 vae_models = {
     'sd-vae-ft-ema/config.json',
     'sd-vae-ft-ema/diffusion_pytorch_model.bin'

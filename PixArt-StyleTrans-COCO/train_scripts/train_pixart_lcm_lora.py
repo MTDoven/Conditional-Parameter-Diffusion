@@ -355,7 +355,7 @@ if __name__ == '__main__':
     if not os.path.exists('output/pretrained_models/null_embed.pth'):
         logger.info(f"Creating output/pretrained_models/null_embed.pth")
         os.makedirs('output/pretrained_models/', exist_ok=True)
-        pipe = PixArtAlphaPipeline.from_pretrained("PixArt-alpha/PixArt-XL-2-1024-MS", torch_dtype=torch.float16, use_safetensors=True,).to("cuda")
+        pipe = PixArtAlphaPipeline.from_pretrained("PixArt-alpha/PixArt-XL-256", torch_dtype=torch.float16, use_safetensors=True,).to("cuda")
         torch.save(pipe.encode_prompt(""), 'output/pretrained_models/null_embed.pth')
         del pipe
         torch.cuda.empty_cache()

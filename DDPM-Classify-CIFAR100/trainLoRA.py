@@ -90,9 +90,9 @@ if __name__ == "__main__":
         # device setting
         "device": "cuda:5",
         # path setting
-        "CIFAR100_path": "./CIFAR100",
+        "CIFAR100_path": "/path/to/CIFAR100",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
+        "result_save_path": "/path/to/save/loras",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(90, 100, 1):
+    for label in range(0, 100, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

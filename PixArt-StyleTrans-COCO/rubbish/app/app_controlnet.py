@@ -273,7 +273,7 @@ print(f"Inference with {weight_dtype}")
 if torch.cuda.is_available():
     hed = HEDdetector(False).to(device)
     pipe = PixArtAlphaPipeline.from_pretrained(
-        "PixArt-alpha/PixArt-XL-2-1024-MS",
+        "PixArt-alpha/PixArt-XL-256",
         transformer=None,
         torch_dtype=weight_dtype,
         use_safetensors=True,

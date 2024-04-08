@@ -49,7 +49,7 @@ or download with urls:[PixArt ckpt](https://huggingface.co/PixArt-alpha/PixArt-a
 ```bash
 cd /workspace/ComfyUI
 
-mv /path/to/PixArt-XL-2-1024-MS.pth ./models/checkpoints/
+mv /path/to/PixArt-XL-256.pth ./models/checkpoints/
 mv /path/to/sd-vae-ft-ema ./models/VAE/
 mv /path/to/t5-v1_1-xxl ./models/t5/
 ```

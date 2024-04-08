@@ -58,7 +58,6 @@ if __name__ == "__main__":
         "device": "cuda:3",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        # "LoRADDPM_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset/lora_class0_number0.pt",
         "LoRADDPM_path": "CheckpointLoRAGen/0000.pt",
         "save_sampled_images_path": "./temp",
         # model structure
@@ -78,8 +77,7 @@ if __name__ == "__main__":
 
     top1_accuracys, top5_accuracys, mean_probabilitys = [], [], []
     for i in range(100):
-        config["LoRADDPM_path"] = config["LoRADDPM_path"].split("/")[0] + f"/{str(i).zfill(4)}.pt"
-        # config["LoRADDPM_path"] = config["LoRADDPM_path"].split("_")[0] + f"_class{i}_number0.pt"
+        config["LoRADDPM_path"] = config["LoRADDPM_path"].split("/")[0] + f"/class{str(i).zfill(2)}.pt"
         config["label"] = i
         images = sample(**config)
         result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)

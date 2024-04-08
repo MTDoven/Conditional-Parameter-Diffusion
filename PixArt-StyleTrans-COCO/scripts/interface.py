@@ -29,7 +29,7 @@ MAX_SEED = np.iinfo(np.int32).max
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_size', default=1024, type=int)
-    parser.add_argument('--model_path', default='output/pretrained_models/PixArt-XL-2-1024-MS.pth', type=str)
+    parser.add_argument('--model_path', default='output/pretrained_models/PixArt-XL-256.pth', type=str)
     parser.add_argument('--t5_path', default='output/pretrained_models', type=str)
     parser.add_argument('--tokenizer_path', default='output/pretrained_models/sd-vae-ft-ema', type=str)
     parser.add_argument('--llm_model', default='t5', type=str)
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     """
     DESCRIPTION = """# PixArt-Alpha 1024px
             ## If PixArt-Alpha is helpful, please help to ⭐ the [Github Repo](https://github.com/PixArt-alpha/PixArt) and recommend it to your friends 😊'
-            #### [PixArt-Alpha 1024px](https://github.com/PixArt-alpha/PixArt-alpha) is a transformer-based text-to-image diffusion system trained on text embeddings from T5. This demo uses the [PixArt-alpha/PixArt-XL-2-1024-MS](https://huggingface.co/PixArt-alpha/PixArt-XL-2-1024-MS) checkpoint.
+            #### [PixArt-Alpha 1024px](https://github.com/PixArt-alpha/PixArt-alpha) is a transformer-based text-to-image diffusion system trained on text embeddings from T5. This demo uses the [PixArt-alpha/PixArt-XL-256](https://huggingface.co/PixArt-alpha/PixArt-XL-2-1024-MS) checkpoint.
             #### English prompts ONLY; 提示词仅限英文
             Don't want to queue? Try [OpenXLab](https://openxlab.org.cn/apps/detail/PixArt-alpha/PixArt-alpha) or [Google Colab Demo](https://colab.research.google.com/drive/1jZ5UZXk7tcpTfVwnX33dDuefNMcnW9ME?usp=sharing).
             """

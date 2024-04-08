@@ -41,7 +41,6 @@ def train(**config):
         attn=config["attn"],
         num_res_blocks=config["num_res_blocks"],
         dropout=config["dropout"],)
-    unet.load_state_dict(torch.load("/home/nus-wk/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointBaseDDPM/BaseDDPM.pt"))
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(
         model=unet,
@@ -87,7 +86,7 @@ if __name__ == "__main__":
         # device setting
         "device": "cuda:0",
         # path setting
-        "CIFAR100_path": "./CIFAR100",
+        "CIFAR100_path": "/path/to/CIFAR100",
         "result_save_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         # model structure
         "T": 1000,

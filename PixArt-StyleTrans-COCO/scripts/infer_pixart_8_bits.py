@@ -16,7 +16,7 @@ def bytes_to_giga_bytes(bytes):
 
 # Loading in 8 bits needs `bitsandbytes`.
 text_encoder = T5EncoderModel.from_pretrained(
-    "PixArt-alpha/PixArt-XL-2-1024-MS",
+    "PixArt-alpha/PixArt-XL-256",
     subfolder="text_encoder",
     load_in_8bit=True,
     device_map="auto",
@@ -24,7 +24,7 @@ text_encoder = T5EncoderModel.from_pretrained(
 )
 
 pipe = PixArtAlphaPipeline.from_pretrained(
-    "PixArt-alpha/PixArt-XL-2-1024-MS",
+    "PixArt-alpha/PixArt-XL-256",
     text_encoder=text_encoder,
     transformer=None,
     device_map="auto"
@@ -39,7 +39,7 @@ del pipe
 flush()
 
 pipe = PixArtAlphaPipeline.from_pretrained(
-    "PixArt-alpha/PixArt-XL-2-1024-MS",
+    "PixArt-alpha/PixArt-XL-256",
     text_encoder=None,
     torch_dtype=torch.float16,
 ).to("cuda")

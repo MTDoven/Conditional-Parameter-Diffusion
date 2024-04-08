@@ -29,14 +29,14 @@ from transformers import T5EncoderModel
 from diffusers import PixArtAlphaPipeline
 
 text_encoder = T5EncoderModel.from_pretrained(
-    "PixArt-alpha/PixArt-XL-2-1024-MS",
+    "PixArt-alpha/PixArt-XL-256",
     subfolder="text_encoder",
     load_in_8bit=True,
     device_map="auto",
 
 )
 pipe = PixArtAlphaPipeline.from_pretrained(
-    "PixArt-alpha/PixArt-XL-2-1024-MS",
+    "PixArt-alpha/PixArt-XL-256",
     text_encoder=text_encoder,
     transformer=None,
     device_map="auto"
@@ -69,7 +69,7 @@ Then compute the latents providing the prompt embeddings as inputs:
 
 ```python
 pipe = PixArtAlphaPipeline.from_pretrained(
-    "PixArt-alpha/PixArt-XL-2-1024-MS",
+    "PixArt-alpha/PixArt-XL-256",
     text_encoder=None,
     torch_dtype=torch.float16,
 ).to("cuda")
