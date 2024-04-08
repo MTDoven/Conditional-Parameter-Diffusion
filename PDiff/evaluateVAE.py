@@ -15,7 +15,7 @@ if __name__ == "__main__":
         "device": "cuda:4",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "VAE_path": "./CheckpointVAE/VAE.pt.309",
+        "VAE_path": "./CheckpointVAE/VAE.pt.529",
         "path_to_loras": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # vae structure
@@ -24,8 +24,6 @@ if __name__ == "__main__":
         "num_parameters": 54912,
         "last_length": 429,
         "num_layers": -1,
-        # test setting
-        "batch_size": 4,
     }
 
     device = config["device"]

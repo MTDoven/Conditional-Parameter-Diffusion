@@ -274,7 +274,7 @@ Following the `PixArt + ControlNet` [training guidance](asset/docs/pixart_contro
 ```bash
 pip install peft==0.6.2
 
-accelerate launch --num_processes=1 --main_process_port=36667  train_scripts/train_pixart_lora_hf.py --mixed_precision="fp16" \
+accelerate launch --num_processes=1 --main_process_port=36667  train_scripts/trainLoRA.py --mixed_precision="fp16" \
   --pretrained_model_name_or_path=PixArt-alpha/PixArt-XL-2-1024-MS \
   --dataset_name=lambdalabs/pokemon-blip-captions --caption_column="text" \
   --resolution=1024 --random_flip \

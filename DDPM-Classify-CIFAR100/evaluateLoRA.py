@@ -55,7 +55,7 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:3",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         # "LoRADDPM_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset/lora_class0_number0.pt",
