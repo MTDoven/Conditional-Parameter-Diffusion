@@ -28,16 +28,16 @@ if __name__ == "__main__":
         # training setting
         "lr": 0.0002,
         "weight_decay": 0.0,
-        "epochs": 400,
+        "epochs": 600,
         "eta_min": 0.,
         "batch_size": 64,
         "num_workers": 32,
         "kld_weight": 0.0,
         "kld_start_epoch": 400,
-        "kld_rise_rate": 0.0,
-        "save_every": 50,
+        "kld_rise_rate": 0.00000001,
+        "save_every": 25,
         "norm_weight": 0.0,
-        "norm_start_epoch": 50,
+        "norm_start_epoch": 60,
         "norm_rise_rate": 0.0000008
     }
 
