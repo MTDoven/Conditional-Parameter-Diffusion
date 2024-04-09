@@ -15,8 +15,8 @@ if __name__ == "__main__":
         "device": "cuda:4",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "VAE_path": "./CheckpointVAE/VAE.pt.529",
-        "path_to_loras": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
+        "VAE_path": "./CheckpointVAE/VAE-Classify.pt",
+        "path_to_loras": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # vae structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 64],
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             param = gen_parameter.detach().cpu()[0]
 
             dataset.save_param_dict(
-                save_path=os.path.join(config["path_to_save"], f"{str(i).zfill(4)}.pt"),
+                save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}.pt"),
                 parameters=param,)
     print(f"Generated parameters saved to {config['path_to_save']}")
 

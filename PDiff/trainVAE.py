@@ -14,10 +14,10 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:0",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "/data/personal/nus-wk/condipdiff/DDPM-LoRA-Dataset",
+        "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
         "result_save_path": "./CheckpointVAE/VAE.pt",
         # model structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 64],
@@ -28,16 +28,16 @@ if __name__ == "__main__":
         # training setting
         "lr": 0.0002,
         "weight_decay": 0.0,
-        "epochs": 600,
+        "epochs": 400,
         "eta_min": 0.,
         "batch_size": 64,
         "num_workers": 32,
         "kld_weight": 0.0,
-        "kld_start_epoch": 300,
-        "kld_rise_rate": 0.00000001,
-        "save_every": 10,
+        "kld_start_epoch": 400,
+        "kld_rise_rate": 0.0,
+        "save_every": 50,
         "norm_weight": 0.0,
-        "norm_start_epoch": 60,
+        "norm_start_epoch": 50,
         "norm_rise_rate": 0.0000008
     }
 

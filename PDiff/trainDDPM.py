@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify.pt",
         "result_save_path": "./CheckpointDDPM/UNet.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 512, 512, 512],
+        "num_channels": [64, 128, 256, 512, 1024],
         "T": 1000,
         "num_class": 100,
         "num_layers_diff": -1,
@@ -33,11 +33,11 @@ if __name__ == "__main__":
         "last_length": 429,
         "num_layers": -1,
         # training setting
-        "lr": 0.001,
+        "lr": 0.01,
         "weight_decay": 0.0,
-        "epochs": 400,
+        "epochs": 300,
         "eta_min": 0.0,
-        "batch_size": 48,
+        "batch_size": 32,
         "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(project="OneDimDDPM-Final")
+    wandb.init(project="OneDimDDPM-Final", config=config)
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],

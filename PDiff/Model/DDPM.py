@@ -60,10 +60,10 @@ class GaussianDiffusionSampler(nn.Module):
         return (extract(self.coeff1, t, x_t.shape) * x_t -
                 extract(self.coeff2, t, x_t.shape) * eps)
 
-    def p_mean_variance(self, x_t, t, condition):
+    def p_mean_variance(self, x_t, condition, t):
         var = torch.cat([self.posterior_var[1:2], self.betas[1:]])
         var = extract(var, t, x_t.shape)
-        eps = self.model(x_t, t, condition)
+        eps = self.model(x_t, condition, t)
         xt_prev_mean = self.predict_xt_prev_mean_from_eps(x_t, t, eps=eps)
         return xt_prev_mean, var
 
@@ -71,7 +71,7 @@ class GaussianDiffusionSampler(nn.Module):
         x_t = x_T
         for time_step in tqdm(reversed(range(self.T))):
             t = x_t.new_ones([x_T.shape[0], ], dtype=torch.long) * time_step
-            mean, var = self.p_mean_variance(x_t=x_t, t=t, condition=condition)
+            mean, var = self.p_mean_variance(x_t=x_t, condition=condition, t=t)
             noise = torch.randn_like(x_t) if time_step > 0 else 0
             x_t = mean + torch.sqrt(var) * noise
             assert torch.isnan(x_t).int().sum() == 0, "nan in tensor."
