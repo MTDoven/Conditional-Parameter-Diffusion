@@ -15,7 +15,7 @@ torch.backends.cudnn.enabled = False
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:2",
+        "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
@@ -35,9 +35,9 @@ if __name__ == "__main__":
         # training setting
         "lr": 0.001,
         "weight_decay": 0.0,
-        "epochs": 600,
+        "epochs": 400,
         "eta_min": 0.0,
-        "batch_size": 64,
+        "batch_size": 48,
         "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,

@@ -38,6 +38,7 @@ from packaging import version
 from peft import LoraConfig, get_peft_model_state_dict, get_peft_model, PeftModel
 from torchvision import transforms
 from tqdm.auto import tqdm
+from PIL import Image
 
 import diffusers
 from diffusers import AutoencoderKL, DDPMScheduler, DiffusionPipeline, StableDiffusionPipeline, PixArtAlphaPipeline, Transformer2DModel
@@ -600,7 +601,19 @@ def main():
 
     # In distributed training, the load_dataset function guarantees that only one local process can concurrently
     # download the dataset.
-    if args.dataset_name is not None:
+    if args.dataset_name is not None and os.path.exists(args.dataset_name):
+        import pandas as pd
+        # get dataset
+        image_folder = args.dataset_name
+        buffer_file = f"./CheckpointStyleDataset/{image_folder.split('/')[-1]}.csv"
+        image_paths = [os.path.join(image_folder, image_name) for image_name in os.listdir(image_folder)]
+        image_titles = [os.path.splitext(image_name)[0] for image_name in os.listdir(image_folder)]
+        df = pd.DataFrame({'image': image_paths, 'text': image_titles})
+        # process buffer
+        df.to_csv(buffer_file, index=False)
+        dataset = load_dataset('csv', data_files={'train': buffer_file})
+
+    elif args.dataset_name is not None:
         # Downloading and loading a dataset from the hub.
         dataset = load_dataset(
             args.dataset_name,
@@ -674,7 +687,8 @@ def main():
     )
 
     def preprocess_train(examples):
-        images = [image.convert("RGB") for image in examples[image_column]]
+        images = [Image.open(image).convert("RGB") if isinstance(image, str) else image.convert("RGB")
+                  for image in examples[image_column]]
         examples["pixel_values"] = [train_transforms(image) for image in images]
         examples["input_ids"], examples['prompt_attention_mask'] = tokenize_captions(examples, proportion_empty_prompts=args.proportion_empty_prompts, max_length=max_length)
         return examples

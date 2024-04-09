@@ -2,7 +2,7 @@ accelerate launch --num_machines=1 --num_processes=1 --gpu_ids=2 \
   --main_process_port=36669 --dynamo_backend="no" --mixed_precision="bf16" \
   trainLoRA.py \
   --pretrained_model_name_or_path="./PixArt-XL-256" \
-  --dataset_name="polinaeterna/pokemon-blip-captions" --caption_column="text" \
+  --dataset_name="/data/personal/nus-wk/cpdiff/datasets/Styles/style8" \
   --resolution=256 --random_flip \
   --train_batch_size=16 \
   --num_train_epochs=450 --checkpointing_steps=5 \

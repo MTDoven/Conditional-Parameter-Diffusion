@@ -103,14 +103,5 @@ class Image2SafetensorsDataset(Dataset):
             param = parameters[:length_to_cut]
             param_dict_to_save[name] = param.view(shape)
             parameters = parameters[length_to_cut:]
-        # TODO: to save safetensors in a folder like the dataset
-        save_file(param_dict_to_save, save_path)
-
-
-
-
-if __name__ == "__main__":
-    dataset = Image2SafetensorsDataset("/data/personal/nus-wk/cpdiff/datasets/PixArt-LoRA-Dataset",
-                                       "/data/personal/nus-wk/cpdiff/datasets/Styles")
-    print(dataset[0])
-    print(dataset[0][0].mean())
+        os.makedirs(save_path, exist_ok=True)
+        save_file(param_dict_to_save, os.path.join(save_path, "pytorch_lora_weights.safetensors"))
