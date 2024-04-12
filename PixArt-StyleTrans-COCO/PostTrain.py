@@ -2,10 +2,10 @@ import os
 import shutil
 
 
-checkpoint_dir = '/data/personal/nus-wk/cpdiff/condipdiff/PixArt-StyleTrans-COCO/pixart-pokemon-model-4'
-destination_folder = '/data/personal/nus-wk/cpdiff/datasets/ls'
+checkpoint_dir = ('/data/personal/nus-wk/cpdiff/condipdiff/PixArt-StyleTrans-COCO/lora_result_3')
+destination_folder = '/data/personal/nus-wk/cpdiff/datasets/PixArt-LoRA-Dataset'
 classs = "9"
-group = "3"
+group = "10"
 
 
 i = 0

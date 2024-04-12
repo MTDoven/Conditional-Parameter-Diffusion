@@ -505,13 +505,12 @@ def main():
             "to_out.0",
             "proj_in",
             "proj_out",
-            "ff.net.0.proj",
-            "ff.net.2",
-            "proj",
-            "linear",
-            "linear_1",
+            # "ff.net.0.proj",
+            # "ff.net.2",
+            # "proj",
+            # "linear",
+            # "linear_1",
             "linear_2",
-            # "scale_shift_table",      # not available due to the implementation in huggingface/peft, working on it.
         ]
     )
 
@@ -612,7 +611,6 @@ def main():
         # process buffer
         df.to_csv(buffer_file, index=False)
         dataset = load_dataset('csv', data_files={'train': buffer_file})
-
     elif args.dataset_name is not None:
         # Downloading and loading a dataset from the hub.
         dataset = load_dataset(
@@ -687,9 +685,19 @@ def main():
     )
 
     def preprocess_train(examples):
-        images = [Image.open(image).convert("RGB") if isinstance(image, str) else image.convert("RGB")
-                  for image in examples[image_column]]
-        examples["pixel_values"] = [train_transforms(image) for image in images]
+        images = []
+        for image in examples[image_column]:
+            if isinstance(image, str):
+                try:
+                    image = Image.open(image).convert("RGB")
+                    image = train_transforms(image)
+                except:
+                    image = torch.randn((3, args.resolution, args.resolution)) * torch.nan
+            else:
+                image.convert("RGB")
+                image = train_transforms(image)
+            images.append(image)
+        examples["pixel_values"] = images
         examples["input_ids"], examples['prompt_attention_mask'] = tokenize_captions(examples, proportion_empty_prompts=args.proportion_empty_prompts, max_length=max_length)
         return examples
 
@@ -796,6 +804,9 @@ def main():
         transformer.train()
         train_loss = 0.0
         for step, batch in enumerate(train_dataloader):
+            if torch.isnan(batch["pixel_values"]).any():
+                print("Wrong in reading the image!")
+                continue
             with accelerator.accumulate(transformer):
                 # Convert images to latent space
                 latents = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample()

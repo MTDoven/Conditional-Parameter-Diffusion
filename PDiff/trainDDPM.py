@@ -15,14 +15,14 @@ torch.backends.cudnn.enabled = False
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:0",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify.pt",
-        "result_save_path": "./CheckpointDDPM/UNet.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/Classify-VAE.pt",
+        "result_save_path": "./CheckpointDDPM/Classify-UNet.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 512, 1024],
+        "num_channels": [64, 128, 256, 512],
         "T": 1000,
         "num_class": 100,
         "num_layers_diff": -1,
@@ -33,11 +33,11 @@ if __name__ == "__main__":
         "last_length": 429,
         "num_layers": -1,
         # training setting
-        "lr": 0.01,
+        "lr": 0.005,
         "weight_decay": 0.0,
-        "epochs": 300,
+        "epochs": 2000,
         "eta_min": 0.0,
-        "batch_size": 32,
+        "batch_size": 64,
         "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,

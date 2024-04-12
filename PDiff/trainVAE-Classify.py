@@ -14,14 +14,14 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE.pt",
-        # model structure
-        "d_model": [64, 128, 256, 512, 1024, 1024, 64],
-        "d_latent": 512,
+        "result_save_path": "./CheckpointVAE/VAE-Classify.pt",
+        # small model structure
+        "d_model": [64, 128, 256, 512, 1024, 1024, 32],
+        "d_latent": 64,
         "num_parameters": 54912,
         "last_length": 429,
         "num_layers": -1,
@@ -33,12 +33,12 @@ if __name__ == "__main__":
         "batch_size": 64,
         "num_workers": 32,
         "kld_weight": 0.0,
-        "kld_start_epoch": 400,
-        "kld_rise_rate": 0.00000001,
+        "kld_start_epoch": 500,
+        "kld_rise_rate": 1e-12,
         "save_every": 25,
         "norm_weight": 0.0,
         "norm_start_epoch": 60,
-        "norm_rise_rate": 0.0000008
+        "norm_rise_rate": 0.0000001
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")

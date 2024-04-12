@@ -83,7 +83,7 @@ class FullConnectVAE(BaseVAE):
 
 
 class OneDimVAE(BaseVAE):
-    def __init__(self, d_model, d_latent, **kwargs):
+    def __init__(self, d_model, d_latent, kernel_size=5, **kwargs):
         super(OneDimVAE, self).__init__()
         self.d_model = d_model.copy()
         self.d_latent = d_latent
@@ -95,7 +95,7 @@ class OneDimVAE(BaseVAE):
         in_dim = 1
         for h_dim in d_model:
             modules.append(nn.Sequential(
-                nn.Conv1d(in_dim, h_dim, kernel_size=5, stride=2, padding=2),
+                nn.Conv1d(in_dim, h_dim, kernel_size, 2, kernel_size//2),
                 nn.BatchNorm1d(h_dim),
                 nn.LeakyReLU()))
             in_dim = h_dim
@@ -115,15 +115,15 @@ class OneDimVAE(BaseVAE):
         d_model.reverse()
         for i in range(len(d_model) - 1):
             modules.append(nn.Sequential(
-                nn.ConvTranspose1d(d_model[i], d_model[i+1], kernel_size=5, stride=2, padding=2, output_padding=1),
+                nn.ConvTranspose1d(d_model[i], d_model[i+1], kernel_size, 2, kernel_size//2, output_padding=1),
                 nn.BatchNorm1d(d_model[i + 1]),
                 nn.LeakyReLU()))
         self.decoder = nn.Sequential(*modules)
         self.final_layer = nn.Sequential(
-            nn.ConvTranspose1d(d_model[-1], d_model[-1], kernel_size=5, stride=2, padding=2, output_padding=1),
+            nn.ConvTranspose1d(d_model[-1], d_model[-1], kernel_size, 2, kernel_size//2, output_padding=1),
             nn.BatchNorm1d(d_model[-1]),
             nn.LeakyReLU(),
-            nn.Conv1d(d_model[-1], 1, kernel_size=5, stride=1, padding=2),
+            nn.Conv1d(d_model[-1], 1, kernel_size, 1, kernel_size//2),
             nn.Tanh())
 
     def encode(self, input, **kwargs):
@@ -146,6 +146,72 @@ class OneDimVAE(BaseVAE):
             f"{self.num_parameters}, {result.shape}"
         assert result.shape[1] == 1, f"{result.shape}"
         return result[:, 0, :]
+
+
+class TwoDimVAE(BaseVAE):
+    def __init__(self, d_model, d_latent, **kwargs):
+        super(TwoDimVAE, self).__init__()
+        self.d_model = d_model.copy()
+        self.d_latent = d_latent
+        self.num_parameters = kwargs["num_parameters"] if "num_parameters" in kwargs else None
+        self.last_length = kwargs["last_length"] if "last_length" in kwargs else None
+
+        # Build Encoder
+        modules = []
+        in_dim = 1
+        for h_dim in d_model:
+            modules.append(nn.Sequential(
+                nn.Conv2d(in_dim, h_dim, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(h_dim),
+                nn.LeakyReLU()))
+            in_dim = h_dim
+        self.encoder = nn.Sequential(*modules)
+        self.to_latent = nn.Sequential(
+            nn.Linear(self.last_length[0] * self.last_length[1] * d_model[-1], d_latent),
+            nn.LeakyReLU())
+        self.fc_mu = nn.Linear(d_latent, d_latent)
+        self.fc_var = nn.Linear(d_latent, d_latent)
+
+        # Build Decoder
+        modules = []
+        self.to_decode = nn.Sequential(
+            nn.Linear(d_latent, d_latent),
+            nn.LeakyReLU(),
+            nn.Linear(d_latent, self.last_length[0] * self.last_length[1] * d_model[-1]))
+        d_model.reverse()
+        for i in range(len(d_model) - 1):
+            modules.append(nn.Sequential(
+                nn.ConvTranspose2d(d_model[i], d_model[i+1], kernel_size=7, stride=2, padding=3, output_padding=1),
+                nn.BatchNorm2d(d_model[i + 1]),
+                nn.LeakyReLU()))
+        self.decoder = nn.Sequential(*modules)
+        self.final_layer = nn.Sequential(
+            nn.ConvTranspose2d(d_model[-1], d_model[-1], kernel_size=7, stride=2, padding=3, output_padding=1),
+            nn.BatchNorm2d(d_model[-1]),
+            nn.LeakyReLU(),
+            nn.Conv2d(d_model[-1], 1, kernel_size=7, stride=1, padding=3),
+            nn.Tanh())
+
+    def encode(self, input, **kwargs):
+        # input.shape == [batch_size, num_parameters]
+        input = input[:, None, :, :]
+        result = self.encoder(input)
+        result = torch.flatten(result, start_dim=1)
+        result = self.to_latent(result)
+        mu = self.fc_mu(result)
+        log_var = self.fc_var(result)
+        return mu, log_var
+
+    def decode(self, z, **kwargs):
+        # z.shape == [batch_size, d_latent]
+        result = self.to_decode(z)
+        result = result.view(-1, self.d_model[-1], self.last_length[0], self.last_length[1])
+        result = self.decoder(result)
+        result = self.final_layer(result)
+        assert self.num_parameters == result.shape[-1] * result.shape[-2], \
+            f"{self.num_parameters}, {result.shape}"
+        assert result.shape[1] == 1, f"{result.shape}"
+        return result[:, 0, :, :]
 
 
 class TransformerVAE(BaseVAE):

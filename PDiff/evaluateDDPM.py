@@ -17,12 +17,12 @@ if __name__ == "__main__":
         "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "UNet_path": "./CheckpointDDPM/UNet.pt",
-        "VAE_path": "./CheckpointVAE/VAE-Classify.pt",
+        "UNet_path": "./CheckpointDDPM/Classify-UNet.pt",
+        "VAE_path": "./CheckpointVAE/Classify-VAE.pt",
         "path_to_loras": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # ddpm structure
-        "num_channels": [64, 128, 256, 512, 512, 512],
+        "num_channels": [64, 128, 256, 512, 512],
         "T": 1000,
         "num_class": 100,
         "num_layers_diff": -1,
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     unet.eval()
     vae.eval()
     with torch.no_grad():
-        condition = torch.tensor([config["condition"] for _ in range(config["batch_size"])])
+        condition = torch.tensor([i for i in range(config["batch_size"])])
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
         gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])

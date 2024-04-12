@@ -12,10 +12,10 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:0",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "VAE_path": "./CheckpointVAE/VAE-Classify.pt",
+        "VAE_path": "./CheckpointVAE/Classify-AE.pt",
         "path_to_loras": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # vae structure
