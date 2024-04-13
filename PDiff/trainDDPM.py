@@ -15,16 +15,17 @@ torch.backends.cudnn.enabled = False
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:3",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
         "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
-        "result_save_path": "./CheckpointDDPM/Classify-UNet.pt",
+        "result_save_path": "./CheckpointDDPM/Classify-UNet-10.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 512, 1024],
+        "num_channels": [64, 128, 192, 256, 384, 512],
         "T": 1000,
         "num_class": 100,
+        "kernel_size": 9,
         "num_layers_diff": -1,
         # vae structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 32],
@@ -33,17 +34,18 @@ if __name__ == "__main__":
         "last_length": 429,
         "num_layers": -1,
         # training setting
-        "lr": 0.0002,
+        "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 1200,
+        "epochs": 400,
         "eta_min": 0.0,
-        "batch_size": 128,
+        "batch_size": 64,
         "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "save_every": 20,
-        "multiplier": 2.0,
+        "multiplier": 1.0,
+        "warm_up_epochs": 1,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -54,6 +56,7 @@ if __name__ == "__main__":
                 num_channels=config["num_channels"],
                 T=config["T"],
                 num_class=config["num_class"],
+                kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],)
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(unet,
@@ -83,7 +86,7 @@ if __name__ == "__main__":
                             shuffle=True,)
     scheduler = GradualWarmupScheduler(optimizer=optimizer,
                                        multiplier=config["multiplier"],
-                                       warm_epoch=config["epochs"] // 5,
+                                       warm_epoch=config["warm_up_epochs"],
                                        after_scheduler=cosineScheduler)
     scaler = torch.cuda.amp.GradScaler()
 
@@ -91,10 +94,11 @@ if __name__ == "__main__":
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with torch.cuda.amp.autocast(enabled=True, dtype=torch.float16):
+            with ((torch.cuda.amp.autocast(enabled=False, dtype=torch.bfloat16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var)
+                    x_0 = x_0 * 0.01
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])

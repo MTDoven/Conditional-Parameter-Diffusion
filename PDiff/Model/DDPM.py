@@ -235,7 +235,6 @@ class ODUNet(nn.Module):
         return x
 
     def encode(self, input, condition, **kwargs):
-        input = input * 0.01
         assert input.shape[1] == self.in_dim, f"{input.shape}, {self.in_dim}"
         self.input_shape = input.shape
         input = input[:, None, :]
@@ -244,6 +243,5 @@ class ODUNet(nn.Module):
 
     def decode(self, x, condition, **kwargs):
         dec_output = self.decoder(x, condition, **kwargs)
-        dec_output = dec_output.view(self.input_shape)
-        return dec_output * 100.0
+        return dec_output.view(self.input_shape)
 

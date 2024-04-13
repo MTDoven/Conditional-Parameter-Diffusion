@@ -17,14 +17,15 @@ if __name__ == "__main__":
         "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "UNet_path": "./CheckpointDDPM/Classify-UNet-2.pt",
+        "UNet_path": "./CheckpointDDPM/Classify-UNet-10.pt",
         "VAE_path": "./CheckpointVAE/Classify-AE.pt",
         "path_to_loras": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # ddpm structure
-        "num_channels": [64, 128, 256, 512],
+        "num_channels": [64, 128, 192, 256, 384, 512],
         "T": 1000,
         "num_class": 100,
+        "kernel_size": 9,
         "num_layers_diff": -1,
         # model structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 32],
@@ -45,6 +46,7 @@ if __name__ == "__main__":
                 num_channels=config["num_channels"],
                 T=config["T"],
                 num_class=config["num_class"],
+                kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],)
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
@@ -70,7 +72,7 @@ if __name__ == "__main__":
         condition = torch.tensor([i for i in range(config["batch_size"])])
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled * 100.0, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
     for i, param in enumerate(gen_parameters):
