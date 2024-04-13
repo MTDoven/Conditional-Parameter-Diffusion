@@ -1,5 +1,5 @@
 from Model.DDPM import ODUNet as UNet
-from Model.DDPM import GaussianDiffusionTrainer
+from Model.DDPM import GaussianDiffusionTrainer, GradualWarmupScheduler
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
         "result_save_path": "./CheckpointDDPM/Classify-UNet.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 512, 768, 1024],
+        "num_channels": [64, 128, 256, 512, 1024],
         "T": 1000,
         "num_class": 100,
         "num_layers_diff": -1,
@@ -33,16 +33,17 @@ if __name__ == "__main__":
         "last_length": 429,
         "num_layers": -1,
         # training setting
-        "lr": 0.008,
+        "lr": 0.0002,
         "weight_decay": 0.0,
         "epochs": 1200,
         "eta_min": 0.0,
-        "batch_size": 64,
+        "batch_size": 128,
         "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "save_every": 20,
+        "multiplier": 2.0,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -72,25 +73,33 @@ if __name__ == "__main__":
     optimizer = AdamW(unet.parameters(),
                       lr=config["lr"],
                       weight_decay=config["weight_decay"])
-    scheduler = CosineAnnealingLR(optimizer,
-                                  T_max=config["epochs"],
-                                  eta_min=config["eta_min"], )
+    cosineScheduler = CosineAnnealingLR(optimizer,
+                                        T_max=config["epochs"],
+                                        eta_min=config["eta_min"], )
     dataloader = DataLoader(config["dataset"](config["lora_data_path"]),
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
                             pin_memory=True,
                             shuffle=True,)
+    scheduler = GradualWarmupScheduler(optimizer=optimizer,
+                                       multiplier=config["multiplier"],
+                                       warm_epoch=config["epochs"] // 5,
+                                       after_scheduler=cosineScheduler)
+    scaler = torch.cuda.amp.GradScaler()
 
     wandb.watch(unet)
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            mu, log_var = vae.encode(param.to(device))
-            x_0 = vae.reparameterize(mu, log_var)
-            loss = trainer(x_0, item.to(device))
-            loss.backward()
+            with torch.cuda.amp.autocast(enabled=True, dtype=torch.float16):
+                with torch.no_grad():
+                    mu, log_var = vae.encode(param.to(device))
+                    x_0 = vae.reparameterize(mu, log_var)
+                loss = trainer(x_0, item.to(device))
+            scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
-            optimizer.step()
+            scaler.step(optimizer)
+            scaler.update()
             wandb.log({"epoch": e,
                        "loss: ": loss.item(),
                        "lr": optimizer.state_dict()['param_groups'][0]["lr"],})

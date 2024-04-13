@@ -10,6 +10,37 @@ from torch.nn import init
 from torch.nn import functional as F
 from torch import Tensor
 import numpy as np
+from torch.optim.lr_scheduler import LRScheduler
+
+
+class GradualWarmupScheduler(LRScheduler):
+    def __init__(self, optimizer, multiplier, warm_epoch, after_scheduler=None):
+        self.multiplier = multiplier
+        self.total_epoch = warm_epoch
+        self.after_scheduler = after_scheduler
+        self.finished = False
+        self.last_epoch = None
+        self.base_lrs = None
+        super().__init__(optimizer)
+
+    def get_lr(self):
+        if self.last_epoch > self.total_epoch:
+            if self.after_scheduler:
+                if not self.finished:
+                    self.after_scheduler.base_lrs = [base_lr * self.multiplier for base_lr in self.base_lrs]
+                    self.finished = True
+                return self.after_scheduler.get_lr()
+            return [base_lr * self.multiplier for base_lr in self.base_lrs]
+        return [base_lr * ((self.multiplier - 1.) * self.last_epoch / self.total_epoch + 1.) for base_lr in self.base_lrs]
+
+    def step(self, epoch=None, metrics=None):
+        if self.finished and self.after_scheduler:
+            if epoch is None:
+                self.after_scheduler.step(None)
+            else:
+                self.after_scheduler.step(epoch - self.total_epoch)
+        else:
+            return super(GradualWarmupScheduler, self).step(epoch)
 
 
 def extract(v, t, x_shape):
@@ -38,7 +69,7 @@ class GaussianDiffusionTrainer(nn.Module):
         noise = torch.randn_like(x_0)
         x_t = (extract(self.sqrt_alphas_bar, t, x_0.shape) * x_0 +
                extract(self.sqrt_one_minus_alphas_bar, t, x_0.shape) * noise)
-        loss = F.mse_loss(self.model(x_t, condition, t), noise, reduction='mean')
+        loss = F.mse_loss(self.model(x_t, condition, t), noise, reduction='none').sum() * 0.001
         return loss
 
 
@@ -112,45 +143,6 @@ class TimeEmbedding(nn.Module):
         emb = self.timembedding(t)
         return emb
 
-class TransformerUNet(nn.Module):
-    def __init__(self, d_latent, num_layers, num_class, T=1000, nhead=8, dim_feedforward=2048):
-        super().__init__()
-        self.d_latent = d_latent
-        self.seq_length = None
-        self.num_parameters = None
-        transformer_layer = nn.TransformerEncoderLayer(d_model=d_latent, nhead=nhead,
-                                                       dim_feedforward=dim_feedforward, activation="gelu", batch_first=True)
-        self.encoder = nn.TransformerEncoder(transformer_layer, num_layers)
-        self.decoder = nn.TransformerEncoder(transformer_layer, num_layers)
-        self.time_emb = TimeEmbedding(T, d_latent)
-        self.condi_emb = nn.Embedding(num_class, d_latent)
-
-    def encode(self, input: Tensor):
-        assert len(input.shape) == 2
-        batchsize, length = input.shape
-        to_cat_length = self.d_latent - length % self.d_latent
-        zeros_to_cat = torch.zeros([batchsize, to_cat_length], device=input.device)
-        input = torch.cat([input, zeros_to_cat], dim=1)
-        input = input.view((batchsize, -1, self.d_latent))
-        self.seq_length = input.shape[1]-1
-        self.num_parameters = length
-        # go ahead into encoder
-        result = self.encoder(input)
-        return result
-
-    def decode(self, result):
-        # go ahead into decoder
-        result = self.decoder(result)
-        result = torch.flatten(result, start_dim=1)
-        result = result[:, :self.num_parameters]
-        return result
-
-    def forward(self, input, condition, t, **kwargs):
-        result = self.encode(input)
-        result += self.time_emb(t)[:, None, :] + self.condi_emb(condition)[:, None, :]
-        output = self.decode(result)
-        return output
-
 
 class ODUnetEncoder(nn.Module):
     def __init__(self, in_dim_list, enc_channel_list, kernel_size):
@@ -167,18 +159,18 @@ class ODUnetEncoder(nn.Module):
 
     def build_layer(self, in_dim, in_channel, out_channel, kernel_size):
         layer = nn.Sequential(
-            nn.InstanceNorm1d(in_dim),
             nn.Conv1d(in_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
+            nn.BatchNorm1d(out_channel),
             nn.LeakyReLU(),
-            nn.InstanceNorm1d(in_dim),
             nn.Conv1d(out_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
+            nn.BatchNorm1d(out_channel),
             nn.LeakyReLU(), )
         return layer
 
-    def forward(self, x, condition, time, **kwargs):
+    def forward(self, x, condition, **kwargs):
         encoder_output = []
         for i, layer in enumerate(self.encoder):
-            x = layer(x) + condition[i] + time[i]
+            x = layer(x) + condition
             encoder_output.append(x)
         return encoder_output
 
@@ -199,26 +191,26 @@ class ODUnetDecoder(nn.Module):
 
     def build_layer(self, in_dim, in_channel, out_channel, kernel_size, last=False):
         layer = nn.Sequential(
-            nn.InstanceNorm1d(in_dim),
             nn.Conv1d(in_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
+            nn.BatchNorm1d(out_channel),
             nn.LeakyReLU(),
-            nn.InstanceNorm1d(in_dim),
             nn.Conv1d(out_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
+            nn.BatchNorm1d(out_channel) if not last else nn.Identity(),
             nn.LeakyReLU() if not last else nn.Identity(), )
         return layer
 
-    def forward(self, x, condition, time, **kwargs):
+    def forward(self, x, condition, **kwargs):
         y = x[-1]
         for i, layer in enumerate(self.decoder):
             y = layer(y)
             if i == len(self.decoder) - 1:
                 break
-            y += x[len(x)-i-2] + condition[len(condition)-i-2] + time[len(time)-i-2]
+            y += x[len(x)-i-2] + condition
         return y
 
 class ODUNet(nn.Module):
     def __init__(self, d_latent, num_channels, T, num_class,
-                 in_channel=1, fold_rate=1, kernel_size=5, **kwargs):
+                 in_channel=1, fold_rate=1, kernel_size=7, **kwargs):
         super(ODUNet, self).__init__()
 
         enc_channel_list = num_channels.copy()
@@ -231,27 +223,27 @@ class ODUNet(nn.Module):
         dec_channel_list = dec_channel_list + [in_channel]
         self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
         self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
-        self.time_encode, self.class_encode = nn.ModuleList(), nn.ModuleList()
-        for channel in num_channels:
-            self.time_encode.append(nn.Embedding(T, channel))
-            self.class_encode.append(nn.Embedding(num_class, channel))
+        self.time_encode = TimeEmbedding(T, num_channels[-1])
+        self.class_encode = nn.Embedding(num_class, d_latent)
 
     def forward(self, input, condition, time, **kwargs):
-        condition = [i(condition)[:, :, None] for i in self.class_encode]
-        time = [i(time)[:, :, None] for i in self.time_encode]
-        x = self.encode(input, condition, time)
-        x = self.decode(x, condition, time)
-        x = torch.tanh(x)
+        time_emb = self.time_encode(time)[:, :, None]
+        condi_emb = self.class_encode(condition)[:, None, :]
+        x = self.encode(input, condi_emb)
+        x[-1] += time_emb
+        x = self.decode(x, condi_emb)
         return x
 
-    def encode(self, input, condition, time, **kwargs):
+    def encode(self, input, condition, **kwargs):
+        input = input * 0.01
         assert input.shape[1] == self.in_dim, f"{input.shape}, {self.in_dim}"
         self.input_shape = input.shape
         input = input[:, None, :]
-        enc_output = self.encoder(input, condition, time, **kwargs)
+        enc_output = self.encoder(input, condition, **kwargs)
         return enc_output
 
-    def decode(self, x, condition, time, **kwargs):
-        dec_output = self.decoder(x, condition, time, **kwargs)
-        return dec_output.view(self.input_shape)
+    def decode(self, x, condition, **kwargs):
+        dec_output = self.decoder(x, condition, **kwargs)
+        dec_output = dec_output.view(self.input_shape)
+        return dec_output * 100.0
 

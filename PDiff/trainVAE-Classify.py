@@ -26,7 +26,7 @@ if __name__ == "__main__":
         "last_length": 429,
         "num_layers": -1,
         # training setting
-        "lr": 0.0002,
+        "lr": 0.00008,
         "weight_decay": 0.0,
         "epochs": 600,
         "eta_min": 0.,
