@@ -8,7 +8,7 @@ model = None
 def inference(images, **config):
     global model
     if model is None:
-        model = timm.create_model("timm/vit_base_patch16_224_in21k", pretrained=False)
+        model = timm.create_model("timm/vit_base_patch16_224", pretrained=False)
         model.head = nn.Linear(model.head.in_features, 100)
         model.load_state_dict(torch.load("./Classifier/ViT-CIFAR100/pytorch_model.bin"))
         model = model.to(config["device"])

@@ -14,15 +14,15 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:0",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "UNet_path": "./CheckpointDDPM/Classify-UNet-10.pt",
+        "UNet_path": "./CheckpointDDPM/Classify-UNet.pt",
         "VAE_path": "./CheckpointVAE/Classify-AE.pt",
-        "path_to_loras": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
+        "path_to_loras": "../../datasets/CIFAR10-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # ddpm structure
-        "num_channels": [64, 128, 192, 256, 384, 512],
+        "num_channels": [64, 128, 256, 512, 64],
         "T": 1000,
         "num_class": 100,
         "kernel_size": 9,

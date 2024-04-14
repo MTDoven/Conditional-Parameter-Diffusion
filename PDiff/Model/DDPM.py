@@ -177,6 +177,14 @@ class ODUnetDecoder(nn.Module):
             y += x[len(x)-i-2] + condition
         return y
 
+class MiddleLayers(nn.Module):
+    def __init__(self, d_latent, last_channel):
+        super().__init__()
+        self.layer = nn.Sequential(nn.Linear(d_latent * last_channel, d_latent * last_channel), nn.LeakyReLU())
+
+    def forward(self, x0, time_emb):
+        return self.layer(torch.flatten(x0 + time_emb, start_dim=1)).view(x0.shape) + time_emb
+
 class ODUNet(nn.Module):
     def __init__(self, d_latent, num_channels, T, num_class,
                  in_channel=1, fold_rate=1, kernel_size=7, **kwargs):
@@ -192,6 +200,7 @@ class ODUNet(nn.Module):
         dec_channel_list = dec_channel_list + [in_channel]
         self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
         self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
+        self.middle = MiddleLayers(d_latent, num_channels[-1])
         self.time_encode = TimeEmbedding(T, num_channels[-1])
         self.class_encode = nn.Embedding(num_class, d_latent)
 
@@ -199,7 +208,7 @@ class ODUNet(nn.Module):
         time_emb = self.time_encode(time)[:, :, None]
         condi_emb = self.class_encode(condition)[:, None, :]
         x = self.encode(input, condi_emb)
-        x[-1] += time_emb
+        x[-1] = self.middle(x[-1], time_emb)
         x = self.decode(x, condi_emb)
         return x
 

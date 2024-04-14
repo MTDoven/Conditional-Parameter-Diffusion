@@ -1,8 +1,8 @@
 import torch
 from safetensors.torch import load_file, save_file
 
-x = torch.load("/data/personal/nus-wk/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointLoRAGen/class00.pt")
-y = torch.load("/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset/lora_class0_number0.pt")
+x = torch.load("./DDPM-Classify-CIFAR100/CheckpointLoRAGen/class00.pt")
+y = torch.load("../datasets/CIFAR10-LoRA-Dataset/lora_class0_number0.pt")
 
 for name, param1 in x.items():
     print(param1.flatten(), param1.norm())

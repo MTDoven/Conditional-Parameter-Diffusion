@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
         "result_save_path": "./CheckpointDDPM/Classify-UNet.pt",
         # diffusion structure
-        "num_channels": [64, 128, 192, 256, 384, 512],
+        "num_channels": [64, 128, 256, 512, 64],
         "T": 1000,
         "num_class": 100,
         "kernel_size": 9,
@@ -35,10 +35,10 @@ if __name__ == "__main__":
         # training setting
         "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 1000,
+        "epochs": 1200,
         "eta_min": 0.0,
         "batch_size": 128,
-        "num_workers": 32,
+        "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
