@@ -917,7 +917,10 @@ def main():
                         save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
                         accelerator.save_state(save_path)
 
-                        transformer_lora_state_dict = get_peft_model_state_dict(transformer.module)
+                        try:
+                            transformer_lora_state_dict = get_peft_model_state_dict(transformer.module)
+                        except AttributeError:
+                            transformer_lora_state_dict = get_peft_model_state_dict(transformer)
 
                         StableDiffusionPipeline.save_lora_weights(
                             save_directory=save_path,
