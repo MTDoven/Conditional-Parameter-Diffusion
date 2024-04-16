@@ -17,15 +17,15 @@ if __name__ == "__main__":
         "device": "cuda:0",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "UNet_path": "./CheckpointDDPM/Classify-UNet.pt",
+        "UNet_path": "./CheckpointDDPM/Classify-UNet-0.pt.1000",
         "VAE_path": "./CheckpointVAE/Classify-AE.pt",
         "path_to_loras": "../../datasets/CIFAR10-LoRA-Dataset",
-        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
+        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen2",
         # ddpm structure
-        "num_channels": [64, 128, 256, 512, 64],
+        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 100,
-        "kernel_size": 9,
+        "kernel_size": 3,
         "num_layers_diff": -1,
         # model structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 32],

@@ -14,17 +14,17 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../../datasets/CIFAR10-LoRA-Dataset",
         "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
-        "result_save_path": "./CheckpointDDPM/Classify-UNet.pt",
+        "result_save_path": "./CheckpointDDPM/Classify-UNet-1.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 512, 64],
+        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 100,
-        "kernel_size": 9,
+        "kernel_size": 3,
         "num_layers_diff": -1,
         # vae structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 32],
@@ -35,9 +35,9 @@ if __name__ == "__main__":
         # training setting
         "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 1200,
+        "epochs": 1000,
         "eta_min": 0.0,
-        "batch_size": 128,
+        "batch_size": 256,
         "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
@@ -80,14 +80,15 @@ if __name__ == "__main__":
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
                             pin_memory=True,
-                            shuffle=True,)
+                            shuffle=True,
+                            drop_last=True)
     scaler = torch.cuda.amp.GradScaler()
 
     wandb.watch(unet)
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with ((torch.cuda.amp.autocast(enabled=False, dtype=torch.bfloat16))):
+            with ((torch.cuda.amp.autocast(enabled=False, dtype=torch.float16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var)

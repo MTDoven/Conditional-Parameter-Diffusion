@@ -5,6 +5,7 @@ from torch.nn import functional as F
 
 
 model = None
+@torch.no_grad()
 def inference(images, **config):
     global model
     if model is None:
@@ -12,6 +13,7 @@ def inference(images, **config):
         model.head = nn.Linear(model.head.in_features, 100)
         model.load_state_dict(torch.load("./Classifier/ViT-CIFAR100/pytorch_model.bin"))
         model = model.to(config["device"])
+        model.eval()
 
     result = model(F.interpolate(images, size=(224, 224), mode="bilinear"))
     probabilities = torch.softmax(result, dim=1)

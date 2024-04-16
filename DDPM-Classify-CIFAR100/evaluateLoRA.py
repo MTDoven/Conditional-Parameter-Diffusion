@@ -55,10 +55,10 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:6",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "CheckpointLoRAGen/class00.pt",
+        "LoRADDPM_path": "CheckpointLoRAGen2/class00.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 200,
+        "batch_size": 500,
         # variable setting
         "label": 0,
     }
@@ -80,7 +80,21 @@ if __name__ == "__main__":
         config["LoRADDPM_path"] = config["LoRADDPM_path"].split("/")[0] + f"/class{str(i).zfill(2)}.pt"
         config["label"] = i
         images = sample(**config)
-        result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
+        if len(images) > 200:
+            assert len(images) % 100 == 0
+            this_results, this_top1_accuracys, this_top5_accuracys, this_mean_probabilitys = [], [], [], []
+            for i in range(0, len(images), 100):
+                result, top1_accuracy, top5_accuracy, mean_probability = inference(images[i: i+100], **config)
+                this_results.append(result)
+                this_top1_accuracys.append(top1_accuracy * config["batch_size"])
+                this_top5_accuracys.append(top5_accuracy * config["batch_size"])
+                this_mean_probabilitys.append(mean_probability)
+            result = torch.cat(this_results, dim=0)
+            top1_accuracy = sum(this_top1_accuracys) / len(this_top1_accuracys)
+            top5_accuracy = sum(this_top5_accuracys) / len(this_top5_accuracys)
+            mean_probability = sum(this_mean_probabilitys) / len(this_mean_probabilitys)
+        else:
+            result, top1_accuracy, top5_accuracy, mean_probability = inference(images, **config)
         print(f"class{i}_result:", result, "\n"
               "top1_accuracy:", top1_accuracy, "\n"
               "top5_accuracy:", top5_accuracy, "\n"

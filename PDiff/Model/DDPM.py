@@ -126,14 +126,14 @@ class ODUnetEncoder(nn.Module):
             encoder.append(layer)
         self.encoder = encoder
 
-    def build_layer(self, in_dim, in_channel, out_channel, kernel_size):
+    def build_layer(self, in_dim, in_channel, out_channel, kernel_size, activator=nn.LeakyReLU):
         layer = nn.Sequential(
             nn.Conv1d(in_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.BatchNorm1d(out_channel),
-            nn.LeakyReLU(),
+            activator(),
             nn.Conv1d(out_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.BatchNorm1d(out_channel),
-            nn.LeakyReLU(), )
+            activator(), )
         return layer
 
     def forward(self, x, condition, **kwargs):
@@ -158,14 +158,14 @@ class ODUnetDecoder(nn.Module):
             decoder.append(layer)
         self.decoder = decoder
 
-    def build_layer(self, in_dim, in_channel, out_channel, kernel_size, last=False):
+    def build_layer(self, in_dim, in_channel, out_channel, kernel_size, last=False, activator=nn.ELU):
         layer = nn.Sequential(
             nn.Conv1d(in_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.BatchNorm1d(out_channel),
-            nn.LeakyReLU(),
+            activator(),
             nn.Conv1d(out_channel, out_channel, kernel_size, padding=kernel_size//2, stride=1),
             nn.BatchNorm1d(out_channel) if not last else nn.Identity(),
-            nn.LeakyReLU() if not last else nn.Identity(), )
+            activator() if not last else nn.Identity(), )
         return layer
 
     def forward(self, x, condition, **kwargs):
@@ -180,10 +180,11 @@ class ODUnetDecoder(nn.Module):
 class MiddleLayers(nn.Module):
     def __init__(self, d_latent, last_channel):
         super().__init__()
-        self.layer = nn.Sequential(nn.Linear(d_latent * last_channel, d_latent * last_channel), nn.LeakyReLU())
+        self.layer = nn.Linear(d_latent * last_channel, d_latent * last_channel)
 
-    def forward(self, x0, time_emb):
-        return self.layer(torch.flatten(x0 + time_emb, start_dim=1)).view(x0.shape) + time_emb
+    def forward(self, x0, time_emb, condi_emb, **kwargs):
+        x1 = self.layer(torch.flatten(x0 + time_emb, start_dim=1)).view(x0.shape)
+        return F.leaky_relu(x1) + time_emb + condi_emb
 
 class ODUNet(nn.Module):
     def __init__(self, d_latent, num_channels, T, num_class,
@@ -208,7 +209,7 @@ class ODUNet(nn.Module):
         time_emb = self.time_encode(time)[:, :, None]
         condi_emb = self.class_encode(condition)[:, None, :]
         x = self.encode(input, condi_emb)
-        x[-1] = self.middle(x[-1], time_emb)
+        x[-1] = self.middle(x[-1], time_emb=time_emb, condi_emb=condi_emb)
         x = self.decode(x, condi_emb)
         return x
 

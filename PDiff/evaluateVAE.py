@@ -16,11 +16,11 @@ if __name__ == "__main__":
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "VAE_path": "./CheckpointVAE/Classify-AE.pt",
-        "path_to_loras": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
+        "path_to_loras": "../../datasets/CIFAR10-LoRA-Dataset",
         "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen",
         # vae structure
-        "d_model": [64, 128, 256, 512, 1024, 1024, 64],
-        "d_latent": 512,
+        "d_model": [64, 128, 256, 512, 1024, 1024, 32],
+        "d_latent": 64,
         "num_parameters": 54912,
         "last_length": 429,
         "num_layers": -1,
