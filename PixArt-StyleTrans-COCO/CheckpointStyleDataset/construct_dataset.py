@@ -1,12 +1,14 @@
 import os
 import shutil
 
+style_class = 2
+param_group = 3
 
-checkpoint_dir = ('./lora_result_2_3')
-destination_folder = '../../datasets/PixArt-LoRA-Dataset'
-classs = "2"
-group = "3"
 
+checkpoint_dir = (f'../lora_result_{style_class}_{param_group}')
+destination_folder = '../../../datasets/PixArt-LoRA-Dataset'
+classs = str(style_class)
+group = str(param_group)
 
 i = 0
 for folder in os.listdir(checkpoint_dir):
