@@ -58,7 +58,7 @@ if __name__ == "__main__":
         "device": "cuda:6",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "CheckpointLoRAGen2/class00.pt",
+        "LoRADDPM_path": "./CheckpointLoRAGen-bs128/class00.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,

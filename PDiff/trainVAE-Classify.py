@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "device": "cuda:1",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/CIFAR10-LoRA-Dataset",
+        "lora_data_path": "../../datasets/CIFAR10-LoRA-Dataset",
         "result_save_path": "./CheckpointVAE/VAE-Classify.pt",
         # small model structure
         "d_model": [64, 128, 256, 512, 1024, 1024, 32],

@@ -19,7 +19,7 @@ if __name__ == "__main__":
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../../datasets/CIFAR10-LoRA-Dataset",
         "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
-        "result_save_path": "./CheckpointDDPM/Classify-UNet-1.pt",
+        "result_save_path": "./CheckpointDDPM/Classify-UNet-bs256.pt",
         # diffusion structure
         "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
         "T": 1000,

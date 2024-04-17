@@ -2,9 +2,9 @@ import os
 import shutil
 
 
-checkpoint_dir = ('./lora_result_9_3')
+checkpoint_dir = ('./lora_result_2_3')
 destination_folder = '../../datasets/PixArt-LoRA-Dataset'
-classs = "9"
+classs = "2"
 group = "3"
 
 
