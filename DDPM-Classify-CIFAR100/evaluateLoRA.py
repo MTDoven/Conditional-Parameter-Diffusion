@@ -1,4 +1,4 @@
-
+import os
 import torch
 from Diffusion.Diffusion import GaussianDiffusionSampler
 from LoRA.Model import UNet
@@ -42,8 +42,8 @@ def sample(**config):
             device=device,)
         sampledImgs = sampler(noisyImage)
         if config["save_sampled_images_path"]:
-            from PIL import Image
-            import os.path
+            if not os.path.exists(config["save_sampled_images_path"]):
+                os.makedirs(config["save_sampled_images_path"], exist_ok=False)
             sampledImgs = sampledImgs * 0.5 + 0.5  # [0 ~ 1]
             arrays = sampledImgs.mul(255).add_(0.5).clamp_(0, 255).permute(0, 2, 3, 1).to("cpu", torch.uint8).numpy()
             for i, image in enumerate(arrays):
