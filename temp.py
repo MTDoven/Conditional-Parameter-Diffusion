@@ -10,7 +10,7 @@ for i in range(10):
             try:
                 x = load_file(f"../datasets/PixArt-LoRA-Dataset/lora_class{i}_group{j}_number{k}/pytorch_lora_weights.safetensors")
                 for name, param in x.items():
-                    if param.norm() > 1:
+                    if param.norm() > 1.2:
                         print(param.norm(), f"lora_class{i}_group{j}_number{k}")
             except FileNotFoundError as e:
                 print(e)

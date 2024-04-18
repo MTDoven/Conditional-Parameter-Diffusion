@@ -87,6 +87,8 @@ class FullConnectVAE(BaseVAE):
 class OneDimVAE(BaseVAE):
     def __init__(self, d_model, d_latent, kernel_size=5, **kwargs):
         super(OneDimVAE, self).__init__()
+        use_elu_activator = ("use_elu_activator" in kwargs) and (kwargs.get("use_elu_activator") is True)
+
         self.d_model = d_model.copy()
         self.d_latent = d_latent
         self.num_parameters = kwargs["num_parameters"] if "num_parameters" in kwargs else None
@@ -112,21 +114,21 @@ class OneDimVAE(BaseVAE):
         modules = []
         self.to_decode = nn.Sequential(
             nn.Linear(d_latent, d_latent),
-            nn.LeakyReLU(),
+            nn.LeakyReLU() if not use_elu_activator else nn.ELU(),
             nn.Linear(d_latent, self.last_length * d_model[-1]))
         d_model.reverse()
         for i in range(len(d_model) - 1):
             modules.append(nn.Sequential(
                 nn.ConvTranspose1d(d_model[i], d_model[i+1], kernel_size, 2, kernel_size//2, output_padding=1),
                 nn.BatchNorm1d(d_model[i + 1]),
-                nn.LeakyReLU()))
+                nn.LeakyReLU() if not use_elu_activator else nn.ELU(),))
         self.decoder = nn.Sequential(*modules)
         self.final_layer = nn.Sequential(
             nn.ConvTranspose1d(d_model[-1], d_model[-1], kernel_size, 2, kernel_size//2, output_padding=1),
             nn.BatchNorm1d(d_model[-1]),
-            nn.LeakyReLU(),
+            nn.LeakyReLU() if not use_elu_activator else nn.ELU(),
             nn.Conv1d(d_model[-1], 1, kernel_size, 1, kernel_size//2),
-            nn.Tanh())
+            nn.Tanh() if not use_elu_activator else nn.Identity())
 
     def encode(self, input, **kwargs):
         # input.shape == [batch_size, num_parameters]

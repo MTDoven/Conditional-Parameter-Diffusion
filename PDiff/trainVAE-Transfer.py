@@ -29,8 +29,9 @@ if __name__ == "__main__":
         "kernel_size": 5,
         "num_layers": -1,
         "not_use_var": True,
+        "use_elu_activator": True,
         # training setting
-        "lr": 0.00005,
+        "lr": 0.00003,
         "weight_decay": 0.0,
         "epochs": 1000,
         "eta_min": 0.,
@@ -54,7 +55,8 @@ if __name__ == "__main__":
                 num_parameters=config["num_parameters"],
                 last_length=config["last_length"],
                 kernel_size=config["kernel_size"],
-                num_layers=config["num_layers"],)
+                num_layers=config["num_layers"],
+                use_elu_activator=config["use_elu_activator"],)
     model = model.to(device)
     optimizer = AdamW(model.parameters(),
                       lr=config["lr"],
