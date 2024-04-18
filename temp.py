@@ -1,4 +1,12 @@
 import torch
+x = torch.load("./DDPM-Classify-CIFAR10/CheckpointBaseDDPM/BaseDDPM.pt")
+x = x["net_model"]
+torch.save(x, "DDPM-Classify-CIFAR10/CheckpointBaseDDPM/BaseDDPM.pt")
+
+
+exit()
+
+import torch
 from safetensors.torch import load_file, save_file
 
 # x = torch.load("./DDPM-Classify-CIFAR100/CheckpointLoRAGen/class00.pt")

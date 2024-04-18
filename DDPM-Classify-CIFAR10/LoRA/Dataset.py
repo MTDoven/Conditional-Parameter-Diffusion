@@ -6,7 +6,7 @@ import torch
 
 class OneClassDataset(Dataset):
     def __init__(self, root, img_size, label, train_set=True):
-        dataset = CIFAR100(
+        dataset = CIFAR10(
             root=root,
             train=train_set,
             download=True,

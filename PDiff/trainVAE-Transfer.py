@@ -14,28 +14,28 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:0",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "image_data_path": "../../datasets/Styles",
         "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-ks5-lr5-ld64.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-final.pt",
         # big model structure
-        "d_model": [32, 64, 96, 128, 192, 256, 512, 768, 1024, 32],
-        "d_latent": 64,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
+        "d_latent": 128,
         "num_parameters": 521888+176*2,
-        "last_length": 510,
-        "kernel_size": 5,
+        "last_length": 255,
+        "kernel_size": 9,
         "num_layers": -1,
         "not_use_var": True,
         "use_elu_activator": True,
         # training setting
-        "lr": 0.00003,
+        "lr": 0.0005,
         "weight_decay": 0.0,
         "epochs": 1000,
         "eta_min": 0.,
-        "batch_size": 32,
+        "batch_size": 64,
         "num_workers": 32,
         "kld_weight": 0.0,
         "kld_start_epoch": 1001,
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         for condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            with autocast(enabled=False):
+            with autocast(enabled = e<config["epochs"]*0.8, dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
                 losses = model.loss_function(*output, kld_weight=config["kld_weight"], norm_weight=config["norm_weight"])
             scaler.scale(losses["loss"]).backward()
