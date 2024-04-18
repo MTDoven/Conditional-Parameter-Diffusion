@@ -1,18 +1,31 @@
 import torch
 from safetensors.torch import load_file, save_file
 
-x = torch.load("./DDPM-Classify-CIFAR100/CheckpointLoRAGen/class00.pt")
-y = torch.load("../datasets/CIFAR10-LoRA-Dataset/lora_class0_number0.pt")
+# x = torch.load("./DDPM-Classify-CIFAR100/CheckpointLoRAGen/class00.pt")
+# y = torch.load("../datasets/CIFAR10-LoRA-Dataset/lora_class0_number0.pt")
 
-for name, param1 in x.items():
-    print(param1.flatten(), param1.norm())
-    break
+for i in range(10):
+    for j in range(4):
+        for k in range(128):
+            try:
+                x = load_file(f"../datasets/PixArt-LoRA-Dataset/lora_class{i}_group{j}_number{k}/pytorch_lora_weights.safetensors")
+                for name, param in x.items():
+                    if param.norm() > 1:
+                        print(param.norm(), f"lora_class{i}_group{j}_number{k}")
+            except FileNotFoundError as e:
+                print(e)
 
-for name, param2 in y.items():
-    print(param2.flatten(), param2.norm())
-    break
 
-print((param1.cpu() - param2.cpu()).flatten().mean())
+# for name, param1 in x.items():
+#     print(param1.flatten(), param1.norm())
+#     break
+
+# for name, param2 in y.items():
+#     print(param2.flatten(), param2.norm())
+#     break
+
+#print((param1.cpu() - param2.cpu()).flatten().mean())
+#print(param1.std())
 
 
 #

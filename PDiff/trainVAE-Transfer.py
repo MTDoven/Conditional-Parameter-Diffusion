@@ -14,33 +14,34 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:2",
+        "device": "cuda:1",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
-        "image_data_path": "/data/personal/nus-wk/cpdiff/datasets/Styles",
-        "lora_data_path": "/data/personal/nus-wk/cpdiff/datasets/PixArt-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer.pt",
+        "image_data_path": "../../datasets/Styles",
+        "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-ks5-lr5-ld64.pt",
         # big model structure
-        "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 768, 1024, 32],
+        "d_model": [32, 64, 96, 128, 192, 256, 512, 768, 1024, 32],
         "d_latent": 64,
         "num_parameters": 521888+176*2,
-        "last_length": 255,
-        "kernel_size": 7,
+        "last_length": 510,
+        "kernel_size": 5,
         "num_layers": -1,
+        "not_use_var": True,
         # training setting
-        "lr": 0.00002,
+        "lr": 0.00005,
         "weight_decay": 0.0,
-        "epochs": 2000,
+        "epochs": 1000,
         "eta_min": 0.,
         "batch_size": 32,
         "num_workers": 32,
         "kld_weight": 0.0,
-        "kld_start_epoch": 1900,
+        "kld_start_epoch": 1001,
         "kld_rise_rate": 1e-12,
-        "save_every": 25,
+        "save_every": 20,
         "norm_weight": 0.0,
-        "norm_start_epoch": 1900,
+        "norm_start_epoch": 1001,
         "norm_rise_rate": 0.0000001
     }
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             parameters = parameters.to(device)
             with autocast(enabled=False):
-                output = model(parameters)
+                output = model(parameters, not_use_var=config["not_use_var"])
                 losses = model.loss_function(*output, kld_weight=config["kld_weight"], norm_weight=config["norm_weight"])
             scaler.scale(losses["loss"]).backward()
             scaler.step(optimizer)

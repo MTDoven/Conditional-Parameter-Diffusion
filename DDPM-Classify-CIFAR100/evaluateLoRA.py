@@ -3,6 +3,7 @@ import torch
 from Diffusion.Diffusion import GaussianDiffusionSampler
 from LoRA.Model import UNet
 from Classifier.inference import inference
+from PIL import Image
 
 
 def sample(**config):

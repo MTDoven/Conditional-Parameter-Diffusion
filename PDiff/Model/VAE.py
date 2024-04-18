@@ -17,14 +17,16 @@ class BaseVAE(nn.Module):
     def decode(self, z, **kwargs):
         pass
 
-    def reparameterize(self, mu, log_var):
+    def reparameterize(self, mu, log_var, **kwargs):
+        if kwargs.get("not_use_var"):
+            return mu
         std = torch.exp(0.5 * log_var)
         eps = torch.randn_like(std)
         return eps * std + mu
 
     def forward(self, input, **kwargs):
         mu, log_var = self.encode(input)
-        z = self.reparameterize(mu, log_var)
+        z = self.reparameterize(mu, log_var, **kwargs)
         recons = self.decode(z)
         return recons, input, mu, log_var
 

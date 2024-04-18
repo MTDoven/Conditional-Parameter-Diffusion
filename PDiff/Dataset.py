@@ -12,6 +12,7 @@ from PIL import Image
 import math
 from torch.nn.utils.rnn import pad_sequence
 from torch.nn import functional as F
+import PIL
 
 
 class ClassIndex2ParamDataset(Dataset):
@@ -87,7 +88,10 @@ class Image2SafetensorsDataset(Dataset):
         for dir in os.listdir(self.path_to_images):
             if label in dir: break
         image = random.choice(next(os.walk(os.path.join(self.path_to_images, dir)))[-1])
-        image = Image.open(os.path.join(self.path_to_images, dir, image)).convert("RGB")
+        try:
+            image = Image.open(os.path.join(self.path_to_images, dir, image)).convert("RGB")
+        except PIL.UnidentifiedImageError:
+            return self[random.randint(0, self.length-1)]
         image = self.transfer(image)
         # load param
         diction = load_file(file_path, device='cpu')
