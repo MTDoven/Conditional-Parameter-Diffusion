@@ -94,7 +94,7 @@ if __name__ == "__main__":
         # path setting
         "CIFAR100_path": "../../datasets/CIFAR10",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "./CheckpointTrainedLoRA",
+        "result_save_path": "./CheckpointTrainLoRA",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -103,12 +103,12 @@ if __name__ == "__main__":
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 1e-4,
+        "lr": 1e-6,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
-        "multiplier": 2.0,
-        "epochs": 1000,
+        "multiplier": 1.0,
+        "epochs": 500,
         "batch_size": 64,
         "num_workers": 24,
         "dropout": 0.1,
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(8, 10, 1):
+    for label in range(0, 5, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

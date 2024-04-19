@@ -33,7 +33,7 @@ def sample(**config):
         if "lora" in name:
             # print(name, len(param.flatten()))
             param_number += len(param.flatten())
-    # print(f"model load weight done. Lora param: {param_number}")
+    print(f"model load weight done. Lora param: {param_number}")
 
     # load model and evaluate
     unet.eval()
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         "device": "cuda:4",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointTrainedLoRA/lora_class0_number79.pt",
+        "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number79.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
@@ -71,13 +71,13 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 500,
+        "batch_size": 10,
         # variable setting
         "label": 0,
     }
 
     top1_accuracys, top5_accuracys, mean_probabilitys = [], [], []
-    for i in range(10):
+    for i in range(1,10):
         config["LoRADDPM_path"] = config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i)}_number79.pt"
         config["label"] = i
         images = sample(**config)

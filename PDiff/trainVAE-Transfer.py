@@ -14,13 +14,13 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "image_data_path": "../../datasets/Styles",
         "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-final-usevar.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-final-notusevar.pt",
         # big model structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 128,
@@ -28,21 +28,21 @@ if __name__ == "__main__":
         "last_length": 255,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
-        "lr": 0.0005,
+        "lr": 0.0003,
         "weight_decay": 0.0,
-        "epochs": 800,
+        "epochs": 1200,
         "eta_min": 0.,
         "batch_size": 64,
         "num_workers": 32,
         "kld_weight": 0.0,
-        "kld_start_epoch": 600,
+        "kld_start_epoch": 1201,
         "kld_rise_rate": 1e-6,
         "save_every": 20,
         "norm_weight": 0.0,
-        "norm_start_epoch": 600,
+        "norm_start_epoch": 1201,
         "norm_rise_rate": 1e-7
     }
 
@@ -58,6 +58,7 @@ if __name__ == "__main__":
                 num_layers=config["num_layers"],
                 use_elu_activator=config["use_elu_activator"],)
     model = model.to(device)
+    model = torch.compile(model)
     optimizer = AdamW(model.parameters(),
                       lr=config["lr"],
                       weight_decay=config["weight_decay"],)
@@ -69,6 +70,7 @@ if __name__ == "__main__":
                                               image_size=config["image_size"],),
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
+                            persistent_workers=True,
                             pin_memory=True,
                             shuffle=True,)
     scaler = torch.cuda.amp.GradScaler()
