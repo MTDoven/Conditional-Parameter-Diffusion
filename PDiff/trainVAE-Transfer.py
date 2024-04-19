@@ -20,7 +20,7 @@ if __name__ == "__main__":
         "dataset": Image2SafetensorsDataset,
         "image_data_path": "../../datasets/Styles",
         "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-final.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-final-usevar.pt",
         # big model structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 128,
@@ -28,26 +28,26 @@ if __name__ == "__main__":
         "last_length": 255,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
         "lr": 0.0005,
         "weight_decay": 0.0,
-        "epochs": 1000,
+        "epochs": 800,
         "eta_min": 0.,
         "batch_size": 64,
         "num_workers": 32,
         "kld_weight": 0.0,
-        "kld_start_epoch": 1001,
-        "kld_rise_rate": 1e-12,
+        "kld_start_epoch": 600,
+        "kld_rise_rate": 1e-6,
         "save_every": 20,
         "norm_weight": 0.0,
-        "norm_start_epoch": 1001,
-        "norm_rise_rate": 0.0000001
+        "norm_start_epoch": 600,
+        "norm_rise_rate": 1e-7
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(config=config, project="VanillaVAE")
+    wandb.init(config=config, project="VanillaVAE-Final")
 
     device = config["device"]
     model = VAE(d_model=config["d_model"],
@@ -87,7 +87,7 @@ if __name__ == "__main__":
             wandb.log(losses)
 
         scheduler.step()
-        if ((e+1)>=config["norm_start_epoch"] or (e+1)>=config["kld_start_epoch"]) and (e+1)%config["save_every"]==0:
+        if (e+1) % config["save_every"] == 0:
             torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
             model.to(device)
         if (e+1) > config["norm_start_epoch"]:

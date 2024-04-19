@@ -1,5 +1,5 @@
 from torch.utils.data import Dataset
-from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR10
 from torchvision import transforms
 import torch
 

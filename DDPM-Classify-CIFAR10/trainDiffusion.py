@@ -68,7 +68,7 @@ def train(**config):
         for i, (images, labels) in enumerate(dataloader):
             optimizer.zero_grad()
             x_0 = images.to(device)
-            loss = trainer(x_0).mean()
+            loss = trainer(x_0)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             optimizer.step()
