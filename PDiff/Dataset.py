@@ -1,3 +1,4 @@
+import shutil
 from functools import reduce
 from torch.utils.data import Dataset
 from tqdm.auto import tqdm
@@ -13,6 +14,7 @@ import math
 from torch.nn.utils.rnn import pad_sequence
 from torch.nn import functional as F
 import PIL
+import shutil
 
 
 class ClassIndex2ParamDataset(Dataset):
@@ -59,6 +61,7 @@ class ClassIndex2ParamDataset(Dataset):
 
 class Image2SafetensorsDataset(Dataset):
     def __init__(self, path_to_loras, path_to_images, image_size=256):
+        self._eval = False
         self.padding = 176
         self.path_to_images = path_to_images
         root, dirs, _ = next(os.walk(path_to_loras))
@@ -102,19 +105,26 @@ class Image2SafetensorsDataset(Dataset):
             this_param.append(param.flatten())
         this_param = torch.cat(this_param, dim=0)
         this_param = torch.cat([torch.zeros(self.padding), this_param, torch.zeros(self.padding)], dim=0)
+        if self._eval:
+            return image, this_param, int(label)
         return image, this_param
 
-    def save_param_dict(self, parameters, save_path):
+    def save_param_dict(self, parameters, save_path, adapter_config_path):
         assert len(parameters.shape) == 1
         parameters = parameters[self.padding: -self.padding]
         param_dict_to_save = {}
         for name, shape in self.param_structure:
             length_to_cut = reduce(lambda x, y: x*y, shape)
             param = parameters[:length_to_cut]
-            param_dict_to_save[name] = param.view(shape)
+            param_dict_to_save[name[5:]] = param.view(shape)  # [5:] is used to drop "unet." prefix
             parameters = parameters[length_to_cut:]
         os.makedirs(save_path, exist_ok=True)
-        save_file(param_dict_to_save, os.path.join(save_path, "pytorch_lora_weights.safetensors"))
+        save_file(param_dict_to_save, os.path.join(save_path, "adapter_model.safetensors"))
+        shutil.copyfile(adapter_config_path, os.path.join(save_path, "adapter_config.json"))
+
+    def eval(self):
+        self._eval = True
+        return self
 
 
 class TwoDimImage2SafetensorsDataset(Dataset):
@@ -122,7 +132,7 @@ class TwoDimImage2SafetensorsDataset(Dataset):
         self.padding = 29
         self.path_to_images = path_to_images
         root, dirs, _ = next(os.walk(path_to_loras))
-        self.files_path = [os.path.join(root, dir, "pytorch_lora_weights.safetensors")
+        self.files_path = [os.path.join(root, dir, "adapter_model.safetensors")
                            for dir in dirs if "lora" in dir]
         self.length = len(self.files_path)
         self.param_structure = []
@@ -172,4 +182,4 @@ class TwoDimImage2SafetensorsDataset(Dataset):
             param_dict_to_save[name] = param.view(shape)
             parameters = parameters[self.param_shape[-1]:]
         os.makedirs(save_path, exist_ok=True)
-        save_file(param_dict_to_save, os.path.join(save_path, "pytorch_lora_weights.safetensors"))
+        save_file(param_dict_to_save, os.path.join(save_path, "adapter_model.safetensors"))

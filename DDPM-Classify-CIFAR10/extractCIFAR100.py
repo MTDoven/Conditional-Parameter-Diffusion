@@ -3,11 +3,11 @@ from LoRA.Dataset import OneClassDataset
 import torch
 from PIL import Image
 
-save_to = "/data/personal/nus-wk/cpdiff/datasets/Generated/OriginalCIFAR100"
+save_to = "../../datasets/Generated/OriginalCIFAR10"
 
 
-for i in range(100):
-    dataset = OneClassDataset(root="/data/personal/nus-wk/cpdiff/datasets/CIFAR100",
+for i in range(10):
+    dataset = OneClassDataset(root="../../datasets/CIFAR10",
                               img_size=32,
                               label=i,
                               train_set=True)
@@ -19,9 +19,9 @@ for i in range(100):
         arrays = img.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to("cpu", torch.uint8).numpy()
         im = Image.fromarray(arrays)
         im.save(os.path.join(save_path, f"{str(index).zfill(6)}.jpg"))
-    assert index == 499, "last index is "+str(index)
+    assert index == 4999, "last index is "+str(index)
 
-    dataset = OneClassDataset(root="/data/personal/nus-wk/cpdiff/datasets/CIFAR100",
+    dataset = OneClassDataset(root="../../datasets/CIFAR10",
                               img_size=32,
                               label=i,
                               train_set=False)

@@ -49,7 +49,7 @@ class BaseVAE(nn.Module):
         return samples
 
     def generate(self, x, **kwargs):
-        return self.forward(x)[0]
+        return self.forward(x, **kwargs)[0]
 
 
 class FullConnectVAE(BaseVAE):

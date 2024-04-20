@@ -1,2 +1,9 @@
 /DDPM-Classify-CIFAR10/CheckpointBaseDDPM/BaseDDPM.pt
 /DDPM-Classify-CIFAR10/temp/
+/DDPM-Classify-CIFAR10/wandb/
+/DDPM-Classify-CIFAR10/CheckpointTrainLoRA/
+/DDPM-Classify-CIFAR10/CheckpointGenLoRA/
+/DDPM-Classify-CIFAR10/CheckpointBaseDDPM/
+/PDiff/wandb/
+/PDiff/CheckpointDDPM/
+/PDiff/CheckpointVAE/
