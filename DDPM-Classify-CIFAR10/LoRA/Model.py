@@ -6,13 +6,6 @@ from torch.nn import init
 from torch.nn import functional as F
 
 
-import math
-import torch
-from torch import nn
-from torch.nn import init
-from torch.nn import functional as F
-
-
 class Swish(nn.Module):
     def forward(self, x):
         return x * torch.sigmoid(x)
@@ -53,14 +46,16 @@ class TimeEmbedding(nn.Module):
 class DownSample(nn.Module):
     def __init__(self, in_ch, rank=RANK):
         super().__init__()
+        self.main = nn.Conv2d(in_ch, in_ch, 3, stride=2, padding=1)
         self.lora_main_A = nn.Conv2d(in_ch, rank, 1, stride=1, padding=0, bias=False)
         self.lora_main_B = nn.Conv2d(rank, in_ch, 3, stride=2, padding=1, bias=False)
-        self.main = nn.Conv2d(in_ch, in_ch, 3, stride=2, padding=1)
         self.initialize()
 
     def initialize(self):
         init.xavier_uniform_(self.main.weight)
         init.zeros_(self.main.bias)
+        init.kaiming_normal_(self.lora_main_A.weight)
+        init.zeros_(self.lora_main_B.weight)
 
     def forward(self, x, temb):
         x = self.main(x) + self.lora_main_B(self.lora_main_A(x))
@@ -78,6 +73,8 @@ class UpSample(nn.Module):
     def initialize(self):
         init.xavier_uniform_(self.main.weight)
         init.zeros_(self.main.bias)
+        init.kaiming_normal_(self.lora_main_A.weight)
+        init.zeros_(self.lora_main_B.weight)
 
     def forward(self, x, temb):
         _, _, H, W = x.shape
@@ -110,6 +107,10 @@ class AttnBlock(nn.Module):
             init.xavier_uniform_(module.weight)
             init.zeros_(module.bias)
         init.xavier_uniform_(self.proj.weight, gain=1e-5)
+        for module in [self.lora_proj_q_A, self.lora_proj_k_A, self.lora_proj_v_A, self.lora_proj_A]:
+            init.kaiming_normal_(module.weight)
+        for module in [self.lora_proj_q_B, self.lora_proj_k_B, self.lora_proj_v_B, self.lora_proj_B]:
+            init.zeros_(module.weight)
 
     def forward(self, x):
         B, C, H, W = x.shape
@@ -170,11 +171,19 @@ class ResBlock(nn.Module):
                 if module.bias is not None:
                     init.zeros_(module.bias)
         init.xavier_uniform_(self.block2[-1].weight, gain=1e-5)
+        for module in [self.lora_conv_block1_A, self.lora_conv_block2_A]:
+            init.kaiming_normal_(module.weight)
+        for module in [self.lora_conv_block1_B, self.lora_conv_block2_B]:
+            init.zeros_(module.weight)
 
     def forward(self, x, temb):
-        h = self.block1(x) + self.lora_conv_block1_B(self.lora_conv_block1_A(x))
+        h = self.block1[1](self.block1[0](x))
+        h = self.block1[2](x) + self.lora_conv_block1_B(self.lora_conv_block1_A(h))
+
         h += self.temb_proj(temb)[:, :, None, None]
-        h = self.block2(h) + self.lora_conv_block2_B(self.lora_conv_block2_A(h))
+
+        h = self.block2[2](self.block2[1](self.block2[0](h)))
+        h = self.block2[3](h) + self.lora_conv_block2_B(self.lora_conv_block2_A(h))
 
         h = h + self.shortcut(x)
         h = self.attn(h)
@@ -182,13 +191,16 @@ class ResBlock(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, T, ch, ch_mult, attn, num_res_blocks, dropout):
+    def __init__(self, T, ch, ch_mult, attn, num_res_blocks, dropout, rank=RANK):
         super().__init__()
         assert all([i < len(ch_mult) for i in attn]), 'attn index out of bound'
         tdim = ch * 4
         self.time_embedding = TimeEmbedding(T, ch, tdim)
 
         self.head = nn.Conv2d(3, ch, kernel_size=3, stride=1, padding=1)
+        self.lora_head_A = nn.Conv2d(3, rank, 1, 1, 0)
+        self.lora_head_B = nn.Conv2d(rank, ch, 1, 1, 0)
+
         self.downblocks = nn.ModuleList()
         chs = [ch]  # record output channel when dowmsample for upsample
         now_ch = ch
@@ -226,6 +238,9 @@ class UNet(nn.Module):
             Swish(),
             nn.Conv2d(now_ch, 3, 3, stride=1, padding=1)
         )
+        self.lora_tail_A = nn.Conv2d(now_ch, rank, 1, 1, 0)
+        self.lora_tail_B = nn.Conv2d(rank, 3, 1, 1, 0)
+
         self.initialize()
 
     def initialize(self):
@@ -233,12 +248,17 @@ class UNet(nn.Module):
         init.zeros_(self.head.bias)
         init.xavier_uniform_(self.tail[-1].weight, gain=1e-5)
         init.zeros_(self.tail[-1].bias)
+        for module in [self.lora_head_A, self.lora_tail_A]:
+            init.kaiming_normal_(module.weight)
+        for module in [self.lora_head_B, self.lora_tail_B]:
+            init.zeros_(module.weight)
 
     def forward(self, x, t):
         # Timestep embedding
         temb = self.time_embedding(t)
         # Downsampling
-        h = self.head(x)
+        h = self.head(x) + self.lora_head_B(self.lora_head_A(x))
+
         hs = [h]
         for layer in self.downblocks:
             h = layer(h, temb)
@@ -251,7 +271,9 @@ class UNet(nn.Module):
             if isinstance(layer, ResBlock):
                 h = torch.cat([h, hs.pop()], dim=1)
             h = layer(h, temb)
-        h = self.tail(h)
+
+        h = self.tail[1](self.tail[0](h))
+        h = self.tail[2](h) + self.lora_tail_B(self.lora_tail_A(h))
 
         assert len(hs) == 0
         return h

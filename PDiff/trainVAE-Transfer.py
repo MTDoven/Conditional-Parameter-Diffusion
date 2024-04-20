@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:2",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
@@ -58,7 +58,6 @@ if __name__ == "__main__":
                 num_layers=config["num_layers"],
                 use_elu_activator=config["use_elu_activator"],)
     model = model.to(device)
-    model = torch.compile(model)
     optimizer = AdamW(model.parameters(),
                       lr=config["lr"],
                       weight_decay=config["weight_decay"],)

@@ -58,7 +58,7 @@ def train(**config):
     warmUpScheduler = GradualWarmupScheduler(
         optimizer=optimizer,
         multiplier=config["multiplier"],
-        warm_epoch=config["epochs"] // 10,
+        warm_epoch=config["epochs"] // 40,
         after_scheduler=cosineScheduler)
 
     # start training
@@ -90,11 +90,11 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:2",
+        "device": "cuda:3",
         # path setting
         "CIFAR100_path": "../../datasets/CIFAR10",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "./CheckpointTrainLoRA",
+        "result_save_path": "./CheckpointTrainLoRA2",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -103,15 +103,15 @@ if __name__ == "__main__":
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 1e-6,
+        "lr": 1e-3,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 1.0,
-        "epochs": 500,
-        "batch_size": 64,
+        "epochs": 1000,
+        "batch_size": 32,
         "num_workers": 24,
-        "dropout": 0.1,
+        "dropout": 0.0,
         "weight_decay": 0.0,
         # variable parameters
         "label": 0
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(0, 5, 1):
+    for label in range(0, 1, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

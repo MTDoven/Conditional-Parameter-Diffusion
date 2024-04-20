@@ -1,15 +1,10 @@
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from tqdm.auto import tqdm
 import math
 import torch
 from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
-from torch import Tensor
-import numpy as np
+from torchvision.models import resnet18, ResNet18_Weights
 
 
 def extract(v, t, x_shape):
@@ -82,6 +77,7 @@ class GaussianDiffusionSampler(nn.Module):
 class Swish(nn.Module):
     def forward(self, x):
         return x * torch.sigmoid(x)
+
 
 class TimeEmbedding(nn.Module):
     def __init__(self, T, d_model):
@@ -186,25 +182,8 @@ class MiddleLayers(nn.Module):
         x1 = self.layer(torch.flatten(x0 + time_emb, start_dim=1)).view(x0.shape)
         return F.leaky_relu(x1) + time_emb + condi_emb
 
-class ODUNet(nn.Module):
-    def __init__(self, d_latent, num_channels, T, num_class,
-                 in_channel=1, fold_rate=1, kernel_size=7, **kwargs):
-        super(ODUNet, self).__init__()
 
-        enc_channel_list = num_channels.copy()
-        dec_channel_list = list(reversed(num_channels.copy()))
-        self.in_dim = d_latent
-
-        enc_dim_list = [d_latent // (fold_rate ** i) for i in range(len(enc_channel_list))]
-        dec_dim_list = [d_latent // (fold_rate ** (4-i)) for i in range(len(dec_channel_list))]
-        enc_channel_list = [in_channel] + enc_channel_list
-        dec_channel_list = dec_channel_list + [in_channel]
-        self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
-        self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
-        self.middle = MiddleLayers(d_latent, num_channels[-1])
-        self.time_encode = TimeEmbedding(T, num_channels[-1])
-        self.class_encode = nn.Embedding(num_class, d_latent)
-
+class ODUNetBase(nn.Module):
     def forward(self, input, condition, time, **kwargs):
         time_emb = self.time_encode(time)[:, :, None]
         condi_emb = self.class_encode(condition)[:, None, :]
@@ -223,4 +202,47 @@ class ODUNet(nn.Module):
     def decode(self, x, condition, **kwargs):
         dec_output = self.decoder(x, condition, **kwargs)
         return dec_output.view(self.input_shape)
+
+
+class ODUNetClassify(ODUNetBase):
+    def __init__(self, d_latent, num_channels, T, num_class,
+                 in_channel=1, fold_rate=1, kernel_size=7, **kwargs):
+        super(ODUNetClassify, self).__init__()
+
+        enc_channel_list = num_channels.copy()
+        dec_channel_list = list(reversed(num_channels.copy()))
+        self.in_dim = d_latent
+
+        enc_dim_list = [d_latent // (fold_rate ** i) for i in range(len(enc_channel_list))]
+        dec_dim_list = [d_latent // (fold_rate ** (4-i)) for i in range(len(dec_channel_list))]
+        enc_channel_list = [in_channel] + enc_channel_list
+        dec_channel_list = dec_channel_list + [in_channel]
+        self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
+        self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
+        self.middle = MiddleLayers(d_latent, num_channels[-1])
+        self.time_encode = TimeEmbedding(T, num_channels[-1])
+        self.class_encode = nn.Embedding(num_class, d_latent)
+
+
+class ODUNetTransfer(ODUNetBase):
+    def __init__(self, d_latent, num_channels, T, num_class,
+                 in_channel=1, fold_rate=1, kernel_size=7, **kwargs):
+        super(ODUNetTransfer, self).__init__()
+
+        enc_channel_list = num_channels.copy()
+        dec_channel_list = list(reversed(num_channels.copy()))
+        self.in_dim = d_latent
+
+        enc_dim_list = [d_latent // (fold_rate ** i) for i in range(len(enc_channel_list))]
+        dec_dim_list = [d_latent // (fold_rate ** (4-i)) for i in range(len(dec_channel_list))]
+        enc_channel_list = [in_channel] + enc_channel_list
+        dec_channel_list = dec_channel_list + [in_channel]
+        self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
+        self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
+        self.middle = MiddleLayers(d_latent, num_channels[-1])
+        self.time_encode = TimeEmbedding(T, num_channels[-1])
+        self.class_encode = nn.Sequential(
+            resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
+            nn.Linear(1000, d_latent),
+        )
 

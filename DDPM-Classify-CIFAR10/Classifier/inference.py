@@ -15,7 +15,7 @@ def inference(images, **config):
     if model is None:
         processor = ViTImageProcessor.from_pretrained('./Classifier/ViT-CIFAR10')
         model = ViTForImageClassification.from_pretrained('./Classifier/ViT-CIFAR10')
-    inputs = processor(images=images, return_tensors="pt")
+    inputs = processor(images=images, return_tensors="pt", do_rescale=False)
     outputs = model(**inputs).logits
     probabilities = torch.softmax(outputs, dim=1)
     _, top5_pred = torch.topk(probabilities, 5, dim=1)

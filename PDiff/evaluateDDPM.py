@@ -1,4 +1,4 @@
-from Model.DDPM import ODUNet as UNet
+from Model.DDPM import ODUNetClassify as UNet
 from Model.DDPM import GaussianDiffusionTrainer, GaussianDiffusionSampler
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset

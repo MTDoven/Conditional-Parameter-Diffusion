@@ -1,43 +1,46 @@
-from Model.DDPM import ODUNet as UNet
+from Model.DDPM import ODUNetTransfer as UNet
 from Model.DDPM import GaussianDiffusionTrainer
 from Model.VAE import OneDimVAE as VAE
-from Dataset import ClassIndex2ParamDataset
+from Dataset import Image2SafetensorsDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 import torch
 from tqdm.auto import tqdm
-import os.path
 import wandb
 
 
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:2",
         # paths setting
-        "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "../../datasets/CIFAR10-LoRA-Dataset",
-        "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
-        "result_save_path": "./CheckpointDDPM/Classify-UNet-bs256.pt",
+        "dataset": Image2SafetensorsDataset,
+        "path_to_images": "../../datasets/Styles",
+        "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
+        "vae_checkpoint_path": "./CheckpointVAE/AE-Transfer.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Transfer.pt",
         # diffusion structure
         "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
-        "num_class": 100,
-        "kernel_size": 3,
+        "num_class": 10,
+        "kernel_size": 5,
         "num_layers_diff": -1,
         # vae structure
-        "d_model": [64, 128, 256, 512, 1024, 1024, 32],
-        "d_latent": 64,
-        "num_parameters": 54912,
-        "last_length": 429,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
+        "d_latent": 128,
+        "num_parameters": 521888+176*2,
+        "last_length": 255,
+        "kernel_size_ae": 9,
         "num_layers": -1,
+        "not_use_var": True,
+        "use_elu_activator": True,
         # training setting
         "lr": 0.002,
         "weight_decay": 0.0,
         "epochs": 1000,
         "eta_min": 0.0,
-        "batch_size": 256,
+        "batch_size": 128,
         "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
@@ -46,7 +49,7 @@ if __name__ == "__main__":
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(project="OneDimDDPM-Final", config=config)
+    wandb.init(project="OneDimDDPM", config=config)
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],
@@ -65,7 +68,9 @@ if __name__ == "__main__":
               d_latent=config["d_latent"],
               num_parameters=config["num_parameters"],
               last_length=config["last_length"],
-              num_layers=config["num_layers"],)
+              kernel_size=config["kernel_size_ae"],
+              num_layers=config["num_layers"],
+              use_elu_activator=config["use_elu_activator"],)
     vae.load_state_dict(torch.load(config["vae_checkpoint_path"]))
     vae = vae.to(device)
     for name, param in vae.named_parameters():
@@ -76,7 +81,7 @@ if __name__ == "__main__":
     scheduler = CosineAnnealingLR(optimizer,
                                   T_max=config["epochs"],
                                   eta_min=config["eta_min"], )
-    dataloader = DataLoader(config["dataset"](config["lora_data_path"]),
+    dataloader = DataLoader(config["dataset"](config["lora_data_path"], config["path_to_images"]),
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
                             pin_memory=True,
@@ -91,7 +96,7 @@ if __name__ == "__main__":
             with ((torch.cuda.amp.autocast(enabled=False, dtype=torch.float16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
-                    x_0 = vae.reparameterize(mu, log_var)
+                    x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])
                     x_0 = x_0 * 0.01
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()

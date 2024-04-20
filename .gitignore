@@ -7,3 +7,7 @@
 /PDiff/wandb/
 /PDiff/CheckpointDDPM/
 /PDiff/CheckpointVAE/
+/PixArt-StyleTrans-COCO/CheckpointLoRAGen/
+/PixArt-StyleTrans-COCO/CheckpointStyleDataset/
+/PixArt-StyleTrans-COCO/wandb/
+/PixArt-StyleTrans-COCO/temp/
