@@ -13,7 +13,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:2",
+        "device": "cuda:0",
         # paths setting
         "dataset": Image2SafetensorsDataset,
         "path_to_images": "../../datasets/Styles",
@@ -21,10 +21,10 @@ if __name__ == "__main__":
         "vae_checkpoint_path": "./CheckpointVAE/AE-Transfer.pt",
         "result_save_path": "./CheckpointDDPM/UNet-Transfer.pt",
         # diffusion structure
-        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 10,
-        "kernel_size": 5,
+        "kernel_size": 3,
         "num_layers_diff": -1,
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(project="OneDimDDPM", config=config)
+    wandb.init(project="OneDimDDPM-Final", config=config)
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],
@@ -58,6 +58,7 @@ if __name__ == "__main__":
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],)
+    # unet = torch.compile(unet)
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(unet,
                                        beta_1=config["beta_1"],
@@ -86,14 +87,15 @@ if __name__ == "__main__":
                             num_workers=config["num_workers"],
                             pin_memory=True,
                             shuffle=True,
-                            drop_last=True)
+                            drop_last=True,
+                            persistent_workers=True,)
     scaler = torch.cuda.amp.GradScaler()
 
     wandb.watch(unet)
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with ((torch.cuda.amp.autocast(enabled=False, dtype=torch.float16))):
+            with ((torch.cuda.amp.autocast(enabled = e<config["epochs"]*0.8, dtype=torch.bfloat16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])

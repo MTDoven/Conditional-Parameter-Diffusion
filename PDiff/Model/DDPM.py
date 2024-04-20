@@ -245,4 +245,3 @@ class ODUNetTransfer(ODUNetBase):
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
             nn.Linear(1000, d_latent),
         )
-

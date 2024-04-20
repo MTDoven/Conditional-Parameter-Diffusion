@@ -88,7 +88,7 @@ if __name__ == "__main__":
         "device": "cuda:1",
         # path setting
         "CIFAR100_path": "../../datasets/CIFAR10",
-        "result_save_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
+        "result_save_path": "./CheckpointBaseDDPM/BaseDDPM-2.pt",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 1000,
+        "epochs": 2000,
         "batch_size": 128,
         "num_workers": 16,
         "dropout": 0.1,

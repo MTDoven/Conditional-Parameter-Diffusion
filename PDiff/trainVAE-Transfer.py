@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:2",
+        "device": "cuda:7",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         "result_save_path": "./CheckpointVAE/VAE-Transfer-final-notusevar.pt",
         # big model structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
+        "d_latent": 64,
         "num_parameters": 521888+176*2,
         "last_length": 255,
         "kernel_size": 9,
