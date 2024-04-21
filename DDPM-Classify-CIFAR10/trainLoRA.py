@@ -104,7 +104,7 @@ if __name__ == "__main__":
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 1e-4,
+        "lr": 1e-5,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(5, 10, 1):
+    for label in range(0, 5, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)
