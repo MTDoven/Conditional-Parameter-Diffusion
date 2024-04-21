@@ -69,7 +69,7 @@ def train(**config):
         for i, (images, labels) in enumerate(dataloader):
             optimizer.zero_grad()
             x_0 = images.to(device)
-            with torch.cuda.amp.autocast(enabled=True, dtype=torch.float16):
+            with torch.cuda.amp.autocast(enabled=False, dtype=torch.float16):
                 loss = trainer(x_0)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(0, 5, 1):
+    for label in range(5, 10, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)
