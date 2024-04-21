@@ -46,12 +46,13 @@ if __name__ == "__main__":
         "BaseModel_path": "./PixArt-XL-256",
         "LoRAModel_path": "./CheckpointLoRAGen/class00",
         "save_sampled_images_path": "./temp",
-        "prompts": ["a strong man with dark skin playing in the beach.",
-                    "Two women are rollerblading in front of some buses."],
+        "prompts": ["A baby elephant standing next to it's parents",
+                    "a lamp post and a fire hydrant in front of a bench",
+                    "A grain on a train track with multiple cars attached"],
         "dtype": torch.float16,
     }
 
-    for i in range(10):
+    for i in range(1):
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
         images = inference_with_lora(prompt=config["prompts"],
                                      lora_path=config["LoRAModel_path"],

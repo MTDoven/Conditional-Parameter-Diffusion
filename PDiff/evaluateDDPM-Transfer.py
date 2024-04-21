@@ -83,7 +83,7 @@ if __name__ == "__main__":
                 image, param, item, prompt = dataset[index]
                 if item == i:
                     condition.append(image)
-                    print("\r", item, end="")
+                    print("\r", item, prompt, end="")
                     break
         condition = torch.stack(condition)
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
