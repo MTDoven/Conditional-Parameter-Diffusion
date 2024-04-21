@@ -4,9 +4,9 @@
 /DDPM-Classify-CIFAR10/CheckpointTrainLoRA/
 /DDPM-Classify-CIFAR10/CheckpointGenLoRA/
 /DDPM-Classify-CIFAR10/CheckpointBaseDDPM/
-/PDiff/wandb/
-/PDiff/CheckpointDDPM/
-/PDiff/CheckpointVAE/
+/CondiPDiff/wandb/
+/CondiPDiff/CheckpointDDPM/
+/CondiPDiff/CheckpointVAE/
 /PixArt-StyleTrans-COCO/CheckpointLoRAGen/
 /PixArt-StyleTrans-COCO/CheckpointStyleDataset/
 /PixArt-StyleTrans-COCO/wandb/
