@@ -90,9 +90,9 @@ class Image2SafetensorsDataset(Dataset):
         dir = None
         for dir in os.listdir(self.path_to_images):
             if label in dir: break
-        image = random.choice(next(os.walk(os.path.join(self.path_to_images, dir)))[-1])
+        image_name = random.choice(next(os.walk(os.path.join(self.path_to_images, dir)))[-1])
         try:
-            image = Image.open(os.path.join(self.path_to_images, dir, image)).convert("RGB")
+            image = Image.open(os.path.join(self.path_to_images, dir, image_name)).convert("RGB")
         except PIL.UnidentifiedImageError:
             return self[random.randint(0, self.length-1)]
         image = self.transfer(image)
@@ -106,7 +106,7 @@ class Image2SafetensorsDataset(Dataset):
         this_param = torch.cat(this_param, dim=0)
         this_param = torch.cat([torch.zeros(self.padding), this_param, torch.zeros(self.padding)], dim=0)
         if self._eval:
-            return image, this_param, int(label)
+            return image, this_param, int(label), image_name[:-4]
         return image, this_param
 
     def save_param_dict(self, parameters, save_path, adapter_config_path):

@@ -49,10 +49,10 @@ if __name__ == "__main__":
     with torch.no_grad():
         for i in range(10):
             for index in range(len(dataset)):
-                image, param, item = dataset[index]
+                image, param, item, prompt = dataset[index]
                 if item == i:
+                    print("\r", item, end="")
                     break
-            print("\r", item, end="")
             gen_parameter = model.generate(
                 x=param[None, :].to(device),
                 num_parameters=config["num_parameters"],

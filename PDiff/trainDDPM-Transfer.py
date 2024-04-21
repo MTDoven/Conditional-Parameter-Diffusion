@@ -38,7 +38,7 @@ if __name__ == "__main__":
         # training setting
         "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 1000,
+        "epochs": 2000,
         "eta_min": 0.0,
         "batch_size": 128,
         "num_workers": 16,
@@ -58,7 +58,6 @@ if __name__ == "__main__":
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],)
-    # unet = torch.compile(unet)
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(unet,
                                        beta_1=config["beta_1"],
@@ -95,7 +94,7 @@ if __name__ == "__main__":
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with ((torch.cuda.amp.autocast(enabled = e<config["epochs"]*0.8, dtype=torch.bfloat16))):
+            with ((torch.cuda.amp.autocast(enabled = e<config["epochs"]*0.8, dtype=torch.float16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])

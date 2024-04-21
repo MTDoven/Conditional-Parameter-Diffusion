@@ -243,5 +243,16 @@ class ODUNetTransfer(ODUNetBase):
         self.time_encode = TimeEmbedding(T, num_channels[-1])
         self.class_encode = nn.Sequential(
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
-            nn.Linear(1000, d_latent),
+            nn.LeakyReLU(),
+            nn.Linear(1000, d_latent*2),
+            nn.LeakyReLU(),
+            nn.Linear(d_latent*2, d_latent),
         )
+
+    def forward(self, input, condition, time, **kwargs):
+        time_emb = self.time_encode(time)[:, :, None]
+        condi_emb = self.class_encode(condition)[:, None, :]
+        x = self.encode(input, condi_emb)
+        x[-1] = self.middle(x[-1], time_emb=time_emb, condi_emb=condi_emb)
+        x = self.decode(x, condi_emb)
+        return x

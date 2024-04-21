@@ -26,7 +26,8 @@ def train(**config):
         num_workers=config["num_workers"],
         drop_last=True,
         pin_memory=True,
-        shuffle=True,)
+        shuffle=True,
+        persistent_workers=True, )
 
     # model setup
     unet = UNet(
@@ -90,7 +91,7 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:3",
+        "device": "cuda:1",
         # path setting
         "CIFAR100_path": "../../datasets/CIFAR10",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
@@ -103,12 +104,12 @@ if __name__ == "__main__":
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 2e-6,
+        "lr": 1e-4,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 1.0,
-        "epochs": 1000,
+        "epochs": 1200,
         "batch_size": 64,
         "num_workers": 24,
         "dropout": 0.0,
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(0, 1, 1):
+    for label in range(5, 10, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

@@ -1,7 +1,7 @@
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR10
 from torchvision import transforms
 from Diffusion.Diffusion import GaussianDiffusionTrainer
 from Diffusion.Scheduler import GradualWarmupScheduler
@@ -16,8 +16,8 @@ def train(**config):
     device = torch.device(config["device"])
 
     # dataset
-    dataset = CIFAR100(
-        root=config["CIFAR100_path"],
+    dataset = CIFAR10(
+        root=config["CIFAR10_path"],
         train=True,
         download=True,
         transform=transforms.Compose([
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         # device setting
         "device": "cuda:1",
         # path setting
-        "CIFAR100_path": "../../datasets/CIFAR10",
+        "CIFAR10_path": "../../datasets/CIFAR10",
         "result_save_path": "./CheckpointBaseDDPM/BaseDDPM-2.pt",
         # model structure
         "T": 1000,
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 2000,
+        "epochs": 1200,
         "batch_size": 128,
         "num_workers": 16,
         "dropout": 0.1,
