@@ -505,11 +505,11 @@ def main():
             "to_out.0",
             "proj_in",
             "proj_out",
-            # "ff.net.0.proj",
-            # "ff.net.2",
-            # "proj",
-            # "linear",
-            # "linear_1",
+            "ff.net.0.proj",
+            "ff.net.2",
+            "proj",
+            "linear",
+            "linear_1",
             "linear_2",
         ]
     )
@@ -607,6 +607,7 @@ def main():
         buffer_file = f"./CheckpointStyleDataset/{image_folder.split('/')[-1]}.csv"
         image_paths = [os.path.join(image_folder, image_name) for image_name in os.listdir(image_folder)]
         image_titles = [os.path.splitext(image_name)[0] for image_name in os.listdir(image_folder)]
+        image_titles = ["a "+i if i.isdigit() else i for i in image_titles]
         df = pd.DataFrame({'image': image_paths, 'text': image_titles})
         # process buffer
         df.to_csv(buffer_file, index=False)

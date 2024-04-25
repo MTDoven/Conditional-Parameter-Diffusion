@@ -18,3 +18,5 @@ for folder in os.listdir(checkpoint_dir):
             i += 1
             dest_path = os.path.join(destination_folder, new_name)
             shutil.copytree(file_path, dest_path, dirs_exist_ok=True)
+        else:
+            raise ValueError

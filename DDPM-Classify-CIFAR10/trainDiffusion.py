@@ -59,7 +59,7 @@ def train(**config):
     warmUpScheduler = GradualWarmupScheduler(
         optimizer=optimizer,
         multiplier=config["multiplier"],
-        warm_epoch=config["epochs"] // 10,
+        warm_epoch=config["epochs"] // 20,
         after_scheduler=cosineScheduler)
 
     # start training
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         "T": 1000,
         "channel": 128,
         "channel_mult": [1, 2, 3, 4],
-        "attn": [1, 2, 3],
+        "attn": [2],
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
