@@ -91,7 +91,7 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:5",
         # path setting
         "CIFAR100_path": "../../datasets/CIFAR10",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
@@ -99,12 +99,12 @@ if __name__ == "__main__":
         # model structure
         "T": 1000,
         "channel": 128,
-        "channel_mult": [1, 2, 2, 2],
-        "attn": [1],
+        "channel_mult": [1, 2, 3, 4],
+        "attn": [1, 2, 3],
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 1e-5,
+        "lr": 1e-4,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(5, 10, 1):
+    for label in range(0, 10, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

@@ -85,15 +85,15 @@ def train(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:5",
         # path setting
         "CIFAR10_path": "../../datasets/CIFAR10",
-        "result_save_path": "./CheckpointBaseDDPM/BaseDDPM-2.pt",
+        "result_save_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         # model structure
         "T": 1000,
         "channel": 128,
-        "channel_mult": [1, 2, 2, 2],
-        "attn": [1],
+        "channel_mult": [1, 2, 3, 4],
+        "attn": [1, 2, 3],
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting

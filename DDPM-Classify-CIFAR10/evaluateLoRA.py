@@ -56,16 +56,16 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:3",
+        "device": "cuda:6",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number0.pt",
+        "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number79.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
         "channel": 128,
-        "channel_mult": [1, 2, 2, 2],
-        "attn": [1],
+        "channel_mult": [1, 2, 3, 4],
+        "attn": [1, 2, 3],
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting

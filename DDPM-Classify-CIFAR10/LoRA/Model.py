@@ -1,4 +1,4 @@
-RANK = 2
+RANK = 4
 import math
 import torch
 from torch import nn
@@ -54,8 +54,8 @@ class DownSample(nn.Module):
     def initialize(self):
         init.xavier_uniform_(self.main.weight)
         init.zeros_(self.main.bias)
-        init.kaiming_normal_(self.lora_main_A.weight)
-        init.zeros_(self.lora_main_B.weight)
+        # init.kaiming_normal_(self.lora_main_A.weight)
+        # init.zeros_(self.lora_main_B.weight)
 
     def forward(self, x, temb):
         x = self.main(x) + self.lora_main_B(self.lora_main_A(x))
@@ -73,8 +73,8 @@ class UpSample(nn.Module):
     def initialize(self):
         init.xavier_uniform_(self.main.weight)
         init.zeros_(self.main.bias)
-        init.kaiming_normal_(self.lora_main_A.weight)
-        init.zeros_(self.lora_main_B.weight)
+        # init.kaiming_normal_(self.lora_main_A.weight)
+        # init.zeros_(self.lora_main_B.weight)
 
     def forward(self, x, temb):
         _, _, H, W = x.shape
@@ -107,10 +107,10 @@ class AttnBlock(nn.Module):
             init.xavier_uniform_(module.weight)
             init.zeros_(module.bias)
         init.xavier_uniform_(self.proj.weight, gain=1e-5)
-        for module in [self.lora_proj_q_A, self.lora_proj_k_A, self.lora_proj_v_A, self.lora_proj_A]:
-            init.kaiming_normal_(module.weight)
-        for module in [self.lora_proj_q_B, self.lora_proj_k_B, self.lora_proj_v_B, self.lora_proj_B]:
-            init.zeros_(module.weight)
+        # for module in [self.lora_proj_q_A, self.lora_proj_k_A, self.lora_proj_v_A, self.lora_proj_A]:
+        #     init.kaiming_normal_(module.weight)
+        # for module in [self.lora_proj_q_B, self.lora_proj_k_B, self.lora_proj_v_B, self.lora_proj_B]:
+        #     init.zeros_(module.weight)
 
     def forward(self, x):
         B, C, H, W = x.shape
@@ -171,10 +171,10 @@ class ResBlock(nn.Module):
                 if module.bias is not None:
                     init.zeros_(module.bias)
         init.xavier_uniform_(self.block2[-1].weight, gain=1e-5)
-        for module in [self.lora_conv_block1_A, self.lora_conv_block2_A]:
-            init.kaiming_normal_(module.weight)
-        for module in [self.lora_conv_block1_B, self.lora_conv_block2_B]:
-            init.zeros_(module.weight)
+        # for module in [self.lora_conv_block1_A, self.lora_conv_block2_A]:
+        #     init.kaiming_normal_(module.weight)
+        # for module in [self.lora_conv_block1_B, self.lora_conv_block2_B]:
+        #     init.zeros_(module.weight)
 
     def forward(self, x, temb):
         h = self.block1[1](self.block1[0](x))
@@ -248,10 +248,10 @@ class UNet(nn.Module):
         init.zeros_(self.head.bias)
         init.xavier_uniform_(self.tail[-1].weight, gain=1e-5)
         init.zeros_(self.tail[-1].bias)
-        for module in [self.lora_head_A, self.lora_tail_A]:
-            init.kaiming_normal_(module.weight)
-        for module in [self.lora_head_B, self.lora_tail_B]:
-            init.zeros_(module.weight)
+        # for module in [self.lora_head_A, self.lora_tail_A]:
+        #     init.kaiming_normal_(module.weight)
+        # for module in [self.lora_head_B, self.lora_tail_B]:
+        #     init.zeros_(module.weight)
 
     def forward(self, x, t):
         # Timestep embedding
