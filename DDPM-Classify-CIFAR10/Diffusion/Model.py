@@ -116,21 +116,11 @@ class AttnBlock(nn.Module):
 class ResBlock(nn.Module):
     def __init__(self, in_ch, out_ch, tdim, dropout, attn=False):
         super().__init__()
-        self.block1 = nn.Sequential(
-            nn.GroupNorm(32, in_ch),
-            Swish(),
-            nn.Conv2d(in_ch, out_ch, 3, stride=1, padding=1),
-        )
-        self.temb_proj = nn.Sequential(
-            Swish(),
-            nn.Linear(tdim, out_ch),
-        )
-        self.block2 = nn.Sequential(
-            nn.GroupNorm(32, out_ch),
-            Swish(),
-            nn.Dropout(dropout),
-            nn.Conv2d(out_ch, out_ch, 3, stride=1, padding=1),
-        )
+        self.block1 = nn.Sequential(nn.GroupNorm(32, in_ch), Swish())
+        self.conv_block1 = nn.Conv2d(in_ch, out_ch, 3, stride=1, padding=1)
+        self.temb_proj = nn.Sequential(Swish(), nn.Linear(tdim, out_ch))
+        self.block2 = nn.Sequential(nn.GroupNorm(32, out_ch), Swish(), nn.Dropout(dropout))
+        self.conv_block2 = nn.Conv2d(out_ch, out_ch, 3, stride=1, padding=1)
         if in_ch != out_ch:
             self.shortcut = nn.Conv2d(in_ch, out_ch, 1, stride=1, padding=0)
         else:
@@ -146,13 +136,14 @@ class ResBlock(nn.Module):
             if isinstance(module, (nn.Conv2d, nn.Linear)):
                 init.xavier_uniform_(module.weight)
                 init.zeros_(module.bias)
-        init.xavier_uniform_(self.block2[-1].weight, gain=1e-5)
+        init.xavier_uniform_(self.conv_block2.weight, gain=1e-5)
 
     def forward(self, x, temb):
         h = self.block1(x)
+        h = self.conv_block1(h)
         h += self.temb_proj(temb)[:, :, None, None]
         h = self.block2(h)
-
+        h = self.conv_block2(h)
         h = h + self.shortcut(x)
         h = self.attn(h)
         return h
@@ -213,7 +204,7 @@ class UNet(nn.Module):
 
     def forward(self, x, t):
         # Timestep embedding
-        temb = self.time_embedding(t)
+        temb = self.time_embedding(t.to(x.device))
         # Downsampling
         h = self.head(x)
         hs = [h]
@@ -232,13 +223,3 @@ class UNet(nn.Module):
 
         assert len(hs) == 0
         return h
-
-
-if __name__ == '__main__':
-    batch_size = 8
-    model = UNet(
-        T=1000, ch=128, ch_mult=[1, 2, 2, 2], attn=[1],
-        num_res_blocks=2, dropout=0.1)
-    x = torch.randn(batch_size, 3, 32, 32)
-    t = torch.randint(1000, (batch_size, ))
-    y = model(x, t)

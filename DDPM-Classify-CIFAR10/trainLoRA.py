@@ -11,7 +11,6 @@ import wandb
 
 
 def train(**config):
-    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
     wandb.init(config=config, project="LoRADDPM")
     device = torch.device(config["device"])
 
@@ -26,8 +25,7 @@ def train(**config):
         num_workers=config["num_workers"],
         drop_last=True,
         pin_memory=True,
-        shuffle=True,
-        persistent_workers=True, )
+        shuffle=True,)
 
     # model setup
     unet = UNet(
@@ -59,7 +57,7 @@ def train(**config):
     warmUpScheduler = GradualWarmupScheduler(
         optimizer=optimizer,
         multiplier=config["multiplier"],
-        warm_epoch=config["epochs"] // 40,
+        warm_epoch=config["epochs"] // 10,
         after_scheduler=cosineScheduler)
 
     # start training
@@ -69,15 +67,14 @@ def train(**config):
         for i, (images, labels) in enumerate(dataloader):
             optimizer.zero_grad()
             x_0 = images.to(device)
-            with torch.cuda.amp.autocast(enabled=False, dtype=torch.float16):
-                loss = trainer(x_0)
+            loss = trainer(x_0)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             optimizer.step()
             wandb.log({"epoch": e,
                        "loss: ": loss.item(),
                        "lr": optimizer.state_dict()['param_groups'][0]["lr"]})
-            if e >= config["epochs"]-10 and i % 10 == 0:
+            if e >= config["epochs"]-16:
                 state_dict = unet.state_dict()
                 lora_state_dict = {}
                 for name, param in state_dict.items():
@@ -93,9 +90,9 @@ if __name__ == "__main__":
         # device setting
         "device": "cuda:5",
         # path setting
-        "CIFAR100_path": "../../datasets/CIFAR10",
+        "CIFAR100_path": "/path/to/CIFAR100",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "./CheckpointTrainLoRA",
+        "result_save_path": "/path/to/save/loras",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -108,12 +105,12 @@ if __name__ == "__main__":
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
-        "multiplier": 1.0,
-        "epochs": 1200,
-        "batch_size": 64,
-        "num_workers": 24,
-        "dropout": 0.0,
-        "weight_decay": 0.0,
+        "multiplier": 2.0,
+        "epochs": 3000,
+        "batch_size": 32,
+        "num_workers": 4,
+        "dropout": 0.15,
+        "weight_decay": 2e-5,
         # variable parameters
         "label": 0
     }
@@ -121,7 +118,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(0, 10, 1):
+    for label in range(0, 100, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

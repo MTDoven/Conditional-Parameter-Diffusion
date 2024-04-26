@@ -1,12 +1,12 @@
 from torch.utils.data import Dataset
-from torchvision.datasets import CIFAR10
+from torchvision.datasets import CIFAR100
 from torchvision import transforms
 import torch
 
 
 class OneClassDataset(Dataset):
     def __init__(self, root, img_size, label, train_set=True):
-        dataset = CIFAR10(
+        dataset = CIFAR100(
             root=root,
             train=train_set,
             download=True,

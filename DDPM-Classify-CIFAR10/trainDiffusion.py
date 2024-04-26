@@ -59,7 +59,7 @@ def train(**config):
     warmUpScheduler = GradualWarmupScheduler(
         optimizer=optimizer,
         multiplier=config["multiplier"],
-        warm_epoch=config["epochs"] // 20,
+        warm_epoch=config["epochs"] // 10,
         after_scheduler=cosineScheduler)
 
     # start training
@@ -68,7 +68,8 @@ def train(**config):
         for i, (images, labels) in enumerate(dataloader):
             optimizer.zero_grad()
             x_0 = images.to(device)
-            loss = trainer(x_0)
+            with torch.cuda.amp.autocast(enabled=e<int(0.5*config["epochs"]), dtype=torch.bfloat16):
+                loss = trainer(x_0)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             optimizer.step()
@@ -88,7 +89,7 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # path setting
         "CIFAR10_path": "../../datasets/CIFAR10",
-        "result_save_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
+        "result_save_path": "./CheckpointBaseDDPM/BaseDDPM-2.pt",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -97,14 +98,14 @@ if __name__ == "__main__":
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting
-        "lr": 2e-4,
+        "lr": 1e-4,
         "beta_1": 1e-4,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 1200,
+        "epochs": 1000,
         "batch_size": 128,
-        "num_workers": 16,
+        "num_workers": 64,
         "dropout": 0.1,
         "weight_decay": 0.0
     }

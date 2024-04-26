@@ -1,3 +1,4 @@
+
 import torch
 from Diffusion.Diffusion import GaussianDiffusionSampler
 from Diffusion.Model import UNet
@@ -53,7 +54,7 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:6",
+        "device": "cuda:5",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         "save_sampled_images_path": "./temp",
@@ -61,7 +62,7 @@ if __name__ == "__main__":
         "T": 1000,
         "channel": 128,
         "channel_mult": [1, 2, 3, 4],
-        "attn": [1, 2, 3],
+        "attn": [2],
         "num_res_blocks": 2,
         "img_size": 32,
         # training setting

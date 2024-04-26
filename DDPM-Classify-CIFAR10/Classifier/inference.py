@@ -1,25 +1,24 @@
-from transformers import ViTImageProcessor, ViTForImageClassification
-from PIL import Image
-import requests
+import timm
 import torch
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
+from torch import nn
+from torch.nn import functional as F
 
 
 model = None
-processor = None
-
 @torch.no_grad()
 def inference(images, **config):
-    global model, processor
+    global model
     if model is None:
-        processor = ViTImageProcessor.from_pretrained('./Classifier/ViT-CIFAR10')
-        model = ViTForImageClassification.from_pretrained('./Classifier/ViT-CIFAR10')
-    inputs = processor(images=images, return_tensors="pt", do_rescale=False)
-    outputs = model(**inputs).logits
-    probabilities = torch.softmax(outputs, dim=1)
+        model = timm.create_model("timm/vit_base_patch16_224", pretrained=False)
+        model.head = nn.Linear(model.head.in_features, 100)
+        model.load_state_dict(torch.load("./Classifier/Classifier/pytorch_model.bin"))
+        model = model.to(config["device"])
+        model.eval()
+
+    result = model(F.interpolate(images, size=(224, 224), mode="bilinear"))
+    probabilities = torch.softmax(result, dim=1)
     _, top5_pred = torch.topk(probabilities, 5, dim=1)
-    result = torch.argmax(outputs, dim=-1)
+    result = torch.argmax(result, dim=-1)
 
     # Calculate top-1 and top-5 accuracy
     top1_accuracy = torch.eq(top5_pred[:, 0], config['label']).sum().item() / config['batch_size']
@@ -31,4 +30,4 @@ def inference(images, **config):
 
 
 if __name__ == "__main__":
-    inference(Image.open("/data/personal/nus-wk/cpdiff/condipdiff/DDPM-Classify-CIFAR10/temp/000000.jpg"))
+    inference(None)
