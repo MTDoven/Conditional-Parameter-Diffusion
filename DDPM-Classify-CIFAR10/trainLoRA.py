@@ -16,7 +16,7 @@ def train(**config):
 
     # dataset
     dataset = OneClassDataset(
-        root=config["CIFAR100_path"],
+        root=config["CIFAR10_path"],
         img_size=config["img_size"],
         label=config["label"],)
     dataloader = DataLoader(
@@ -90,9 +90,9 @@ if __name__ == "__main__":
         # device setting
         "device": "cuda:5",
         # path setting
-        "CIFAR100_path": "/path/to/CIFAR100",
+        "CIFAR10_path": "../../datasets/CIFAR10",
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "result_save_path": "/path/to/save/loras",
+        "result_save_path": "./CheckpointTrainLoRA",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -106,11 +106,11 @@ if __name__ == "__main__":
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 3000,
-        "batch_size": 32,
-        "num_workers": 4,
-        "dropout": 0.15,
-        "weight_decay": 2e-5,
+        "epochs": 2000,
+        "batch_size": 64,
+        "num_workers": 16,
+        "dropout": 0.0,
+        "weight_decay": 0.0,
         # variable parameters
         "label": 0
     }
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    for label in range(0, 100, 1):
+    for label in range(0, 10, 1):
         config["label"] = label
         print(f"start training lora_class_{label}.pt")
         train(**config)

@@ -52,38 +52,6 @@ class BaseVAE(nn.Module):
         return self.forward(x, **kwargs)[0]
 
 
-class FullConnectVAE(BaseVAE):
-    def __init__(self, d_latent, d_model, **kwargs):
-        super(FullConnectVAE, self).__init__()
-        self.num_parameters = d_model
-        self.latent_dim = d_latent
-
-        # Build Encoder
-        self.encoder = nn.Sequential(
-            nn.Linear(d_model, d_latent),
-            nn.LeakyReLU(),
-            nn.Linear(d_latent, d_latent),
-        )
-        self.to_mean = nn.Linear(d_latent, d_latent)
-        self.to_var = nn.Linear(d_latent, d_latent)
-
-        # Build Decoder
-        self.decoder = nn.Sequential(
-            nn.Linear(d_latent, d_latent),
-            nn.LeakyReLU(),
-            nn.Linear(d_latent, d_model),
-        )
-
-    def encode(self, input, **kwargs):
-        input = self.encoder(input)
-        mean = self.to_mean(input)
-        var = self.to_var(input)
-        return mean, var
-
-    def decode(self, z, **kwargs):
-        return self.decoder(z)
-
-
 class OneDimVAE(BaseVAE):
     def __init__(self, d_model, d_latent, kernel_size=5, **kwargs):
         super(OneDimVAE, self).__init__()
@@ -152,119 +120,126 @@ class OneDimVAE(BaseVAE):
         return result[:, 0, :]
 
 
-class TwoDimVAE(BaseVAE):
-    def __init__(self, d_model, d_latent, **kwargs):
-        super(TwoDimVAE, self).__init__()
-        self.d_model = d_model.copy()
-        self.d_latent = d_latent
-        self.num_parameters = kwargs["num_parameters"] if "num_parameters" in kwargs else None
-        self.last_length = kwargs["last_length"] if "last_length" in kwargs else None
+class VectorQuantizer(nn.Module):
+    def __init__(self, num_embeddings: int, embedding_dim: int, beta: float = 0.25):
+        super(VectorQuantizer, self).__init__()
+        self.K = num_embeddings
+        self.D = embedding_dim
+        self.beta = beta
+        self.embedding = nn.Embedding(self.K, self.D)
+        self.embedding.weight.data.uniform_(-1 / self.K, 1 / self.K)
+
+    def forward(self, latents):
+        latents = latents.permute(0, 2, 3, 1).contiguous()  # [B x D x H x W] -> [B x H x W x D]
+        latents_shape = latents.shape
+        flat_latents = latents.view(-1, self.D)  # [BHW x D]
+        # Compute L2 distance between latents and embedding weights
+        dist = torch.sum(flat_latents ** 2, dim=1, keepdim=True) + \
+               torch.sum(self.embedding.weight ** 2, dim=1) - \
+               2 * torch.matmul(flat_latents, self.embedding.weight.t())  # [BHW x K]
+        # Get the encoding that has the min distance
+        encoding_inds = torch.argmin(dist, dim=1).unsqueeze(1)  # [BHW, 1]
+        # Convert to one-hot encodings
+        device = latents.device
+        encoding_one_hot = torch.zeros(encoding_inds.size(0), self.K, device=device)
+        encoding_one_hot.scatter_(1, encoding_inds, 1)  # [BHW x K]
+        # Quantize the latents
+        quantized_latents = torch.matmul(encoding_one_hot, self.embedding.weight)  # [BHW, D]
+        quantized_latents = quantized_latents.view(latents_shape)  # [B x H x W x D]
+        # Compute the VQ Losses
+        commitment_loss = F.mse_loss(quantized_latents.detach(), latents)
+        embedding_loss = F.mse_loss(quantized_latents, latents.detach())
+        vq_loss = commitment_loss * self.beta + embedding_loss
+        # Add the residue back to the latents
+        quantized_latents = latents + (quantized_latents - latents).detach()
+        return quantized_latents.permute(0, 3, 1, 2).contiguous(), vq_loss  # [B x D x H x W]
+
+
+class ResidualLayer(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int):
+        super(ResidualLayer, self).__init__()
+        self.resblock = nn.Sequential(
+            nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1, bias=False),
+            nn.LeakyReLU(),
+            nn.Conv1d(out_channels, out_channels, kernel_size=1, bias=False), )
+    def forward(self, input):
+        return input + self.resblock(input)
+
+
+class VQVAE(BaseVAE):
+
+    def __init__(self, in_channels: int, embedding_dim: int, num_embeddings: int,
+                 hidden_dims=None, beta: float = 0.25, img_size: int = 64, **kwargs) -> None:
+        super(VQVAE, self).__init__()
+
+        if hidden_dims is None:
+            hidden_dims = [128, 256]
+        self.embedding_dim = embedding_dim
+        self.num_embeddings = num_embeddings
+        self.img_size = img_size
+        self.beta = beta
+
+        modules = []
 
         # Build Encoder
-        modules = []
-        in_dim = 1
-        for h_dim in d_model:
+        for h_dim in hidden_dims:
             modules.append(nn.Sequential(
-                nn.Conv2d(in_dim, h_dim, kernel_size=7, stride=2, padding=3),
-                nn.BatchNorm2d(h_dim),
-                nn.LeakyReLU()))
-            in_dim = h_dim
+                    nn.Conv1d(in_channels, out_channels=h_dim, kernel_size=4, stride=2, padding=1),
+                    nn.LeakyReLU(), ))
+            in_channels = h_dim
+        modules.append(nn.Sequential(
+                nn.Conv1d(in_channels, in_channels, kernel_size=3, stride=1, padding=1),
+                nn.LeakyReLU(), ))
+        for _ in range(6):
+            modules.append(ResidualLayer(in_channels, in_channels))
+        modules.append(nn.LeakyReLU())
+        modules.append(nn.Sequential(
+                nn.Conv1d(in_channels, embedding_dim, kernel_size=1, stride=1),
+                nn.LeakyReLU(), ))
         self.encoder = nn.Sequential(*modules)
-        self.to_latent = nn.Sequential(
-            nn.Linear(self.last_length[0] * self.last_length[1] * d_model[-1], d_latent),
-            nn.LeakyReLU())
-        self.fc_mu = nn.Linear(d_latent, d_latent)
-        self.fc_var = nn.Linear(d_latent, d_latent)
+
+        # build vq_layer
+        self.vq_layer = VectorQuantizer(num_embeddings, embedding_dim, self.beta)
 
         # Build Decoder
         modules = []
-        self.to_decode = nn.Sequential(
-            nn.Linear(d_latent, d_latent),
-            nn.LeakyReLU(),
-            nn.Linear(d_latent, self.last_length[0] * self.last_length[1] * d_model[-1]))
-        d_model.reverse()
-        for i in range(len(d_model) - 1):
+        modules.append(nn.Sequential(
+                nn.Conv1d(embedding_dim, hidden_dims[-1], kernel_size=3, stride=1, padding=1),
+                nn.LeakyReLU(), ))
+        for _ in range(6):
+            modules.append(ResidualLayer(hidden_dims[-1], hidden_dims[-1]))
+        modules.append(nn.LeakyReLU())
+        hidden_dims.reverse()
+        for i in range(len(hidden_dims) - 1):
             modules.append(nn.Sequential(
-                nn.ConvTranspose2d(d_model[i], d_model[i+1], kernel_size=7, stride=2, padding=3, output_padding=1),
-                nn.BatchNorm2d(d_model[i + 1]),
-                nn.LeakyReLU()))
+                    nn.ConvTranspose1d(hidden_dims[i], hidden_dims[i + 1], kernel_size=4, stride=2, padding=1),
+                    nn.LeakyReLU(), ))
+        modules.append(nn.Sequential(
+            nn.ConvTranspose1d(hidden_dims[-1], out_channels=3, kernel_size=4, stride=2, padding=1), ))
         self.decoder = nn.Sequential(*modules)
-        self.final_layer = nn.Sequential(
-            nn.ConvTranspose2d(d_model[-1], d_model[-1], kernel_size=7, stride=2, padding=3, output_padding=1),
-            nn.BatchNorm2d(d_model[-1]),
-            nn.LeakyReLU(),
-            nn.Conv2d(d_model[-1], 1, kernel_size=7, stride=1, padding=3),
-            nn.Tanh())
 
     def encode(self, input, **kwargs):
-        # input.shape == [batch_size, num_parameters]
-        input = input[:, None, :, :]
         result = self.encoder(input)
-        result = torch.flatten(result, start_dim=1)
-        result = self.to_latent(result)
-        mu = self.fc_mu(result)
-        log_var = self.fc_var(result)
-        return mu, log_var
+        return [result]
 
     def decode(self, z, **kwargs):
-        # z.shape == [batch_size, d_latent]
-        result = self.to_decode(z)
-        result = result.view(-1, self.d_model[-1], self.last_length[0], self.last_length[1])
-        result = self.decoder(result)
-        result = self.final_layer(result)
-        assert self.num_parameters == result.shape[-1] * result.shape[-2], \
-            f"{self.num_parameters}, {result.shape}"
-        assert result.shape[1] == 1, f"{result.shape}"
-        return result[:, 0, :, :]
-
-
-class TransformerVAE(BaseVAE):
-    def __init__(self, d_model, d_latent, num_layers, nhead=8, dim_feedforward=2048, **kwargs):
-        super().__init__()
-        self.d_model = d_model
-        self.d_latent = d_latent
-        self.num_parameters = kwargs["num_parameters"] if "num_parameters" in kwargs else None
-        self.seq_length = kwargs["seq_length"] if "seq_length" in kwargs else None
-
-        transformer_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead,
-                dim_feedforward=dim_feedforward, activation="gelu", batch_first=True)
-        self.encoder = nn.TransformerEncoder(transformer_layer, num_layers, norm=nn.LayerNorm(d_model))
-        self.decoder = nn.TransformerEncoder(transformer_layer, num_layers, norm=nn.LayerNorm(d_model))
-
-        self.fc_mu = nn.Linear(d_model, d_latent)
-        self.fc_var = nn.Linear(d_model, d_latent)
-        self.fc_decode = nn.Linear(d_latent, d_model)
-        self.fc_out = nn.Sequential(nn.Flatten(start_dim=1), nn.Tanh())
-
-    def encode(self, input, **kwargs):
-        assert len(input.shape) == 2
-        batchsize, length = input.shape
-        to_cat_length = 2 * self.d_model - length % self.d_model
-        zeros_to_cat = torch.zeros([batchsize, to_cat_length], device=input.device)
-        input = torch.cat([input, zeros_to_cat], dim=1)
-        input = input.view((batchsize, -1, self.d_model))
-        self.seq_length = input.shape[1]-1
-        self.num_parameters = length
-
-        # go ahead into encoder
-        result = self.encoder(input)
-        result = result[:, -1, :]
-        mu = self.fc_mu(result)
-        log_var = self.fc_var(result)
-        return mu, log_var
-
-    def decode(self, z, **kwargs):
-        assert len(z.shape) == 2
-        batchsize, d_latent = z.shape
-        result = self.fc_decode(z)
-        result = result.view(batchsize, 1, self.d_model)
-        zeros_to_cat = torch.zeros([batchsize, self.seq_length, self.d_model], device=result.device)
-        result = torch.cat([result, zeros_to_cat], dim=1)
-
-        # go ahead into decoder
-        result = self.decoder(result)
-        result = result[:, 1:, :]
-        result = self.fc_out(result)
-        result = result[:, :self.num_parameters]
+        result = self.decoder(z)
         return result
 
+    def forward(self, input, **kwargs):
+        encoding = self.encode(input)[0]
+        quantized_inputs, vq_loss = self.vq_layer(encoding)
+        return [self.decode(quantized_inputs), input, vq_loss]
+
+    def loss_function(self, *args, **kwargs):
+        recons = args[0]
+        input = args[1]
+        vq_loss = args[2]
+        recons_loss = F.mse_loss(recons, input)
+        loss = recons_loss + vq_loss
+        return {'loss': loss,
+                'Reconstruction_Loss': recons_loss,
+                'VQ_Loss': vq_loss}
+
+    def generate(self, x, **kwargs):
+        return self.forward(x, **kwargs)[0]
