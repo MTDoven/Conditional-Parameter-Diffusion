@@ -10,11 +10,11 @@ from evaluateLoRA import sample
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:5",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointLoRAGen-bs128/class00.pt",
-        "save_sampled_images_path": "../../datasets/Generated/GeneratedCIFAR100/class00",
+        "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number1150.pt",
+        "save_sampled_images_path": "../../datasets/Generated/OriginCIFAR10/class0",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -25,15 +25,15 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 600,
+        "batch_size": 10000,
         # variable setting
         "label": 0,
     }
 
     for i in range(100):
         config["LoRADDPM_path"] = \
-                config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}.pt"
+                config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i).zfill(1)}_number1150.pt"
         config["save_sampled_images_path"] = \
-                config["save_sampled_images_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
+                config["save_sampled_images_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(1)}"
         config["label"] = i
         images = sample(**config)

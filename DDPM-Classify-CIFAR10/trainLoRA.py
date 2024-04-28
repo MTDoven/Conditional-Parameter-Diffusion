@@ -67,14 +67,15 @@ def train(**config):
         for i, (images, labels) in enumerate(dataloader):
             optimizer.zero_grad()
             x_0 = images.to(device)
-            loss = trainer(x_0)
+            with torch.cuda.amp.autocast(enabled = e>config["epochs"]*0.8, dtype=torch.bfloat16):
+                loss = trainer(x_0)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             optimizer.step()
             wandb.log({"epoch": e,
                        "loss: ": loss.item(),
                        "lr": optimizer.state_dict()['param_groups'][0]["lr"]})
-            if e >= config["epochs"]-16:
+            if e >= config["epochs"]-1:
                 state_dict = unet.state_dict()
                 lora_state_dict = {}
                 for name, param in state_dict.items():
@@ -106,7 +107,7 @@ if __name__ == "__main__":
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
         "multiplier": 2.0,
-        "epochs": 2000,
+        "epochs": 400,
         "batch_size": 64,
         "num_workers": 16,
         "dropout": 0.0,

@@ -56,10 +56,10 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:6",
+        "device": "cuda:5",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointLoRAGen-bs128/class00.pt",
+        "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number1150.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
@@ -77,8 +77,8 @@ if __name__ == "__main__":
     }
 
     top1_accuracys, top5_accuracys, mean_probabilitys = [], [], []
-    for i in range(100):
-        config["LoRADDPM_path"] = config["LoRADDPM_path"].split("/")[0] + f"/class{str(i).zfill(2)}.pt"
+    for i in range(10):
+        config["LoRADDPM_path"] = config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i).zfill(1)}_number1150.pt"
         config["label"] = i
         images = sample(**config)
         if len(images) > 200:
