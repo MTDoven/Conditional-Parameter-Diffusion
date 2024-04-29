@@ -44,13 +44,14 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
-        "LoRAModel_path": "./lora_result_12_0/checkpoint-5600",
+        "LoRAModel_path": "./lora_result_18_0/checkpoint-11200",
         "save_sampled_images_path": "./temp",
         "prompts": ["A baby elephant standing next to it's parents",
                     "a lamp post and a fire hydrant in front of a bench",
                     "A grain on a train track with multiple cars attached",
-                    "Two girls playing in the beach."],
-        "dtype": torch.float16,
+                    "Two girls playing in the beach",
+                    "a lady sitting against a building on her cell phone smoking a cigaret"],
+        "dtype": torch.float32,
     }
 
     for i in range(1):

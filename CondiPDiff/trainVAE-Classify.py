@@ -14,44 +14,46 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:7",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "../../datasets/CIFAR10-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE-Classify.pt",
+        "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
+        "result_save_path": "./CheckpointVAE/VAE-Classify-4.pt",
         # small model structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512],
-        "d_latent": 64,
-        "num_parameters": 85504,
-        "last_length": 429,
-        "num_layers": -1,
-        "not_use_var": True,
+        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
+        "d_latent": 128,
+        "kernel_size": 7,
+        "num_parameters": 54912+192*2,
+        "half_padding": 192,
+        "last_length": 108,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
+        "autocast": False,
         "lr": 0.0003,
         "weight_decay": 0.0,
-        "epochs": 2000,
+        "epochs": 8000,
         "eta_min": 0.,
         "batch_size": 64,
-        "num_workers": 32,
-        "kld_weight": 0.0,
-        "kld_start_epoch": 2001,
-        "kld_rise_rate": 1e-6,
-        "save_every": 20,
+        "num_workers": 16,
+        "save_every": 40,
+        "kld_weight": 0.0001,
+        "kld_start_epoch": 0,
+        "kld_rise_rate": 0.0,
         "norm_weight": 0.0,
-        "norm_start_epoch": 2001,
-        "norm_rise_rate": 1e-7
+        "norm_start_epoch": 8001,
+        "norm_rise_rate": 5e-7
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(config=config, project="VanillaVAE")
+    wandb.init(config=config, project="VanillaVAE-Final")
 
     device = config["device"]
     model = VAE(d_model=config["d_model"],
                 d_latent=config["d_latent"],
+                kernel_size=config["kernel_size"],
                 num_parameters=config["num_parameters"],
                 last_length=config["last_length"],
-                num_layers=config["num_layers"],
                 use_elu_activator=config["use_elu_activator"],)
     model = model.to(device)
     optimizer = AdamW(model.parameters(),
@@ -64,7 +66,8 @@ if __name__ == "__main__":
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
                             pin_memory=True,
-                            shuffle=True,)
+                            shuffle=True,
+                            persistent_workers=False)
     scaler = torch.cuda.amp.GradScaler()
 
     wandb.watch(model)
@@ -72,7 +75,7 @@ if __name__ == "__main__":
         for condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            with autocast(enabled = e<config["epochs"]*0.8, dtype=torch.bfloat16):
+            with autocast(enabled = e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
                 losses = model.loss_function(*output, kld_weight=config["kld_weight"], norm_weight=config["norm_weight"])
             scaler.scale(losses["loss"]).backward()
