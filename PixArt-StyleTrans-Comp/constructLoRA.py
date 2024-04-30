@@ -1,12 +1,12 @@
 import os
 import shutil
 
-style_class = 8
-param_group = 3
+style_class = 4
+param_group = 0
 
-checkpoint_dir = f'./lora_result_{style_class}_{param_group}'
-destination_folder = '../../datasets/PixArt-LoRA-Dataset'
-classs = str(style_class)
+checkpoint_dir = f'./lora_result_{str(style_class).zfill(2)}_{param_group}_finished'
+destination_folder = './CheckpointTrainLoRA'
+classs = str(style_class).zfill(2)
 group = str(param_group)
 
 i = 0

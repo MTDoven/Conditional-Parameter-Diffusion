@@ -14,27 +14,30 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:5",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "UNet_path": "./CheckpointDDPM/Classify-UNet-bs128.pt",
-        "VAE_path": "./CheckpointVAE/Classify-AE.pt",
-        "path_to_loras": "../../datasets/CIFAR10-LoRA-Dataset",
-        "path_to_save": "../DDPM-Classify-CIFAR100/CheckpointLoRAGen-bs128",
+        "UNet_path": "./CheckpointDDPM/UNet-Classify-1.pt",
+        "VAE_path": "./CheckpointVAE/VAE-Classify.pt",
+        "path_to_loras": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
+        "path_to_save": "../DDPM-Classify-CIFAR10/CheckpointGenLoRA",
         # ddpm structure
-        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [32, 64, 128, 192, 256, 384, 32],
         "T": 1000,
-        "num_class": 100,
+        "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
         # model structure
-        "d_model": [64, 128, 256, 512, 1024, 1024, 32],
-        "d_latent": 64,
-        "num_parameters": 54912,
-        "last_length": 429,
-        "num_layers": -1,
+        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
+        "d_latent": 128,
+        "kernel_size_vae": 7,
+        "num_parameters": 54912+192*2,
+        "half_padding": 192,
+        "last_length": 108,
+        "not_use_var": False,
+        "use_elu_activator": True,
         # training setting
-        "batch_size": 100,
+        "batch_size": 10,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         # variable parameters
@@ -52,9 +55,10 @@ if __name__ == "__main__":
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],
               d_latent=config["d_latent"],
+              kernel_size=config["kernel_size_vae"],
               num_parameters=config["num_parameters"],
               last_length=config["last_length"],
-              num_layers=config["num_layers"],)
+              use_elu_activator=config["use_elu_activator"],)
     vae.load_state_dict(torch.load(config["VAE_path"]))
     vae = vae.to(device)
     sampler = GaussianDiffusionSampler(
@@ -72,7 +76,7 @@ if __name__ == "__main__":
         condition = torch.tensor([i for i in range(config["batch_size"])])
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled * 100.0, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled * 1.0, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
     for i, param in enumerate(gen_parameters):

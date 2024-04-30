@@ -14,35 +14,39 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:5",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "lora_data_path": "../../datasets/CIFAR10-LoRA-Dataset",
-        "vae_checkpoint_path": "./CheckpointVAE/Classify-AE.pt",
-        "result_save_path": "./CheckpointDDPM/Classify-UNet-bs256.pt",
+        "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Classify-1.pt",
         # diffusion structure
-        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [32, 64, 128, 192, 256, 384, 32],
         "T": 1000,
-        "num_class": 100,
+        "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
         # vae structure
-        "d_model": [64, 128, 256, 512, 1024, 1024, 32],
-        "d_latent": 64,
-        "num_parameters": 54912,
-        "last_length": 429,
-        "num_layers": -1,
+        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
+        "d_latent": 128,
+        "kernel_size_vae": 7,
+        "num_parameters": 54912+192*2,
+        "half_padding": 192,
+        "last_length": 108,
+        "not_use_var": False,
+        "use_elu_activator": True,
         # training setting
+        "autocast": False,
         "lr": 0.002,
         "weight_decay": 0.0,
         "epochs": 1000,
         "eta_min": 0.0,
         "batch_size": 256,
-        "num_workers": 16,
+        "num_workers": 24,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
-        "save_every": 20,
+        "save_every": 100,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -63,9 +67,10 @@ if __name__ == "__main__":
     trainer = trainer.to(device)
     vae = VAE(d_model=config["d_model"],
               d_latent=config["d_latent"],
+              kernel_size=config["kernel_size_vae"],
               num_parameters=config["num_parameters"],
               last_length=config["last_length"],
-              num_layers=config["num_layers"],)
+              use_elu_activator=config["use_elu_activator"],)
     vae.load_state_dict(torch.load(config["vae_checkpoint_path"]))
     vae = vae.to(device)
     for name, param in vae.named_parameters():
@@ -84,16 +89,14 @@ if __name__ == "__main__":
                             drop_last=True)
     scaler = torch.cuda.amp.GradScaler()
 
-    wandb.watch(unet)
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with ((torch.cuda.amp.autocast(enabled=False, dtype=torch.float16))):
+            with ((torch.cuda.amp.autocast(enabled=config["autocast"], dtype=torch.float16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var)
-                    x_0 = x_0 * 0.01
-                loss = trainer(x_0, item.to(device))
+                loss = trainer(x_0 * 1.0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             scaler.step(optimizer)

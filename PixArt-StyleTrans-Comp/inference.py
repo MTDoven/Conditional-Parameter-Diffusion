@@ -44,7 +44,7 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
-        "LoRAModel_path": "./lora_result_18_0/checkpoint-11200",
+        "LoRAModel_path": "/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointGenLoRA/ls",
         "save_sampled_images_path": "./temp",
         "prompts": ["A baby elephant standing next to it's parents",
                     "a lamp post and a fire hydrant in front of a bench",

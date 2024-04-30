@@ -14,36 +14,35 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
-        "image_data_path": "../../datasets/Styles",
-        "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-final-notusevar.pt",
+        "image_data_path": "../../datasets/MultiStyles",
+        "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-1.pt",
         # big model structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 64,
-        "num_parameters": 521888+176*2,
-        "last_length": 255,
-        "kernel_size": 9,
+        "d_model": [8, 16, 32, 64, 128, 192, 256, 384, 512, 768, 48],
+        "d_latent": 128,
+        "num_parameters": 1720672+848*2,
+        "padding": 848,
+        "last_length": 841,
+        "kernel_size": 11,
         "num_layers": -1,
         "not_use_var": True,
         "use_elu_activator": True,
         # training setting
-        "lr": 0.0003,
+        "autocast": True,
+        "lr": 0.003,
         "weight_decay": 0.0,
-        "epochs": 1200,
+        "epochs": 100,
         "eta_min": 0.,
-        "batch_size": 64,
+        "batch_size": 32,
         "num_workers": 32,
-        "kld_weight": 0.0,
-        "kld_start_epoch": 1201,
-        "kld_rise_rate": 1e-6,
+        "kld_weight": 0.,
+        "kld_start_epoch": 101,
+        "kld_rise_rate": 0.,
         "save_every": 20,
-        "norm_weight": 0.0,
-        "norm_start_epoch": 1201,
-        "norm_rise_rate": 1e-7
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -66,7 +65,8 @@ if __name__ == "__main__":
                                   eta_min=config["eta_min"],)
     dataloader = DataLoader(config["dataset"](path_to_loras=config["lora_data_path"],
                                               path_to_images=config["image_data_path"],
-                                              image_size=config["image_size"],),
+                                              image_size=config["image_size"],
+                                              padding=config["padding"]),
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
                             persistent_workers=True,
@@ -74,14 +74,15 @@ if __name__ == "__main__":
                             shuffle=True,)
     scaler = torch.cuda.amp.GradScaler()
 
-    wandb.watch(model)
     for e in tqdm(range(config["epochs"])):
-        for condition, parameters in dataloader:
+        for *condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            with autocast(enabled = e<config["epochs"]*0.8, dtype=torch.bfloat16):
+            with autocast(enabled = e<config["epochs"]*0.8 and config["autocast"], dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
-                losses = model.loss_function(*output, kld_weight=config["kld_weight"], norm_weight=config["norm_weight"])
+                losses = model.loss_function(*output,
+                                             kld_weight=config["kld_weight"],
+                                             not_use_var=config["not_use_var"])
             scaler.scale(losses["loss"]).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -91,8 +92,6 @@ if __name__ == "__main__":
         if (e+1) % config["save_every"] == 0:
             torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
             model.to(device)
-        if (e+1) > config["norm_start_epoch"]:
-            config["norm_weight"] += config["norm_rise_rate"]
         if (e+1) > config["kld_start_epoch"]:
             config["kld_weight"] += config["kld_rise_rate"]
 

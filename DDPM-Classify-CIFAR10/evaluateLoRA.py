@@ -49,7 +49,11 @@ def sample(**config):
             arrays = sampledImgs.mul(255).add_(0.5).clamp_(0, 255).permute(0, 2, 3, 1).to("cpu", torch.uint8).numpy()
             for i, image in enumerate(arrays):
                 im = Image.fromarray(image)
-                im.save(os.path.join(config["save_sampled_images_path"], f"{str(i).zfill(6)}.jpg"))
+                if config.get("batch_index") is None:
+                    im.save(os.path.join(config["save_sampled_images_path"], f"{str(i).zfill(6)}.jpg"))
+                else:  # config exists batch index
+                    im.save(os.path.join(config["save_sampled_images_path"],
+                                         f"{str(config.get('batch_index')).zfill(2)}{str(i).zfill(4)}.jpg"))
         return sampledImgs
 
 
@@ -59,7 +63,7 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number1150.pt",
+        "LoRADDPM_path": "./CheckpointGenLoRA/class00.pt",
         "save_sampled_images_path": "./temp",
         # model structure
         "T": 1000,
@@ -71,14 +75,14 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 500,
+        "batch_size": 50,
         # variable setting
         "label": 0,
     }
 
     top1_accuracys, top5_accuracys, mean_probabilitys = [], [], []
     for i in range(10):
-        config["LoRADDPM_path"] = config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i).zfill(1)}_number1150.pt"
+        config["LoRADDPM_path"] = config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}.pt"
         config["label"] = i
         images = sample(**config)
         if len(images) > 200:

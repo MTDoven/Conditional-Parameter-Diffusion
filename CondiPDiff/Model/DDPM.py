@@ -18,15 +18,13 @@ class GaussianDiffusionTrainer(nn.Module):
         super().__init__()
         self.model = model
         self.T = T
-        self.register_buffer(
-            'betas', torch.linspace(beta_1, beta_T, T).double())
+        beta = torch.linspace(beta_1, beta_T, T).double()
+        self.register_buffer('betas', beta)
         alphas = 1. - self.betas
         alphas_bar = torch.cumprod(alphas, dim=0)
         # calculations for diffusion q(x_t | x_{t-1}) and others
-        self.register_buffer(
-            'sqrt_alphas_bar', torch.sqrt(alphas_bar))
-        self.register_buffer(
-            'sqrt_one_minus_alphas_bar', torch.sqrt(1. - alphas_bar))
+        self.register_buffer('sqrt_alphas_bar', torch.sqrt(alphas_bar))
+        self.register_buffer('sqrt_one_minus_alphas_bar', torch.sqrt(1. - alphas_bar))
 
     def forward(self, x_0, condition):
         t = torch.randint(self.T, size=(x_0.shape[0], ), device=x_0.device)

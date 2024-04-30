@@ -32,15 +32,20 @@ class BaseVAE(nn.Module):
 
     def loss_function(self, recons, input, mu, log_var, **kwargs):
         recons_loss = F.mse_loss(recons, input)
-        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
-        recons_norm = recons.norm(dim=1)
-        input_norm = input.norm(dim=1)
-        norm_loss = F.mse_loss(recons_norm, input_norm).mean()
-        loss = recons_loss + kwargs['kld_weight'] * kld_loss + kwargs["norm_weight"] * norm_loss
-        return {'loss': loss, 'MSELoss': recons_loss.detach(), 'KLD': kld_loss.detach(),
-                "recons_norm": recons_norm.mean().detach(),
-                "input_norm": input_norm.mean().detach(),
-                "norm_loss": norm_loss}
+        if not kwargs.get("not_use_var"):
+            kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
+            loss = recons_loss + kwargs['kld_weight'] * kld_loss
+            return {'loss': loss,
+                    'MSELoss': recons_loss.detach(),
+                    'KLD': kld_loss.detach(),
+                    "recons_norm": recons.norm(dim=1).mean().detach(),
+                    "input_norm": input.norm(dim=1).mean().detach()}
+        else:  # not use var
+            loss = recons_loss
+            return {'loss': loss,
+                    'MSELoss': recons_loss.detach(),
+                    "recons_norm": recons.norm(dim=1).mean().detach(),
+                    "input_norm": input.norm(dim=1).mean().detach()}
 
     def sample(self, num_samples, current_device, **kwargs):
         z = torch.randn(num_samples, self.latent_dim)
@@ -99,9 +104,11 @@ class OneDimVAE(BaseVAE):
             nn.Tanh() if not use_elu_activator else nn.Identity())
 
     def encode(self, input, **kwargs):
+        #print(input.shape)
         # input.shape == [batch_size, num_parameters]
         input = input[:, None, :]
         result = self.encoder(input)
+        #print(result.shape)
         result = torch.flatten(result, start_dim=1)
         result = self.to_latent(result)
         mu = self.fc_mu(result)

@@ -14,11 +14,11 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Classify-4.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Classify-6.pt",
         # small model structure
         "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
         "d_latent": 128,
@@ -29,16 +29,16 @@ if __name__ == "__main__":
         "not_use_var": False,
         "use_elu_activator": True,
         # training setting
-        "autocast": False,
+        "autocast": True,
         "lr": 0.0003,
         "weight_decay": 0.0,
-        "epochs": 8000,
+        "epochs": 1000,
         "eta_min": 0.,
-        "batch_size": 64,
-        "num_workers": 16,
-        "save_every": 40,
+        "batch_size": 256,
+        "num_workers": 32,
+        "save_every": 1000,
         "kld_weight": 0.0001,
-        "kld_start_epoch": 0,
+        "kld_start_epoch": 8001,
         "kld_rise_rate": 0.0,
         "norm_weight": 0.0,
         "norm_start_epoch": 8001,
@@ -84,7 +84,7 @@ if __name__ == "__main__":
             wandb.log(losses)
 
         scheduler.step()
-        if ((e+1)>=config["norm_start_epoch"] or (e+1)>=config["kld_start_epoch"]) and (e+1)%config["save_every"]==0:
+        if (e+1)%config["save_every"] == 0:
             torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
             model.to(device)
         if (e+1) > config["norm_start_epoch"]:

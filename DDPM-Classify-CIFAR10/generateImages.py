@@ -10,7 +10,7 @@ from evaluateLoRA import sample
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         "LoRADDPM_path": "./CheckpointTrainLoRA/lora_class0_number1150.pt",
@@ -30,10 +30,16 @@ if __name__ == "__main__":
         "label": 0,
     }
 
-    for i in range(100):
+    origin_batch_size = config["batch_size"]
+    config["batch_size"] = 1000
+    for i in range(10):
         config["LoRADDPM_path"] = \
                 config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i).zfill(1)}_number1150.pt"
         config["save_sampled_images_path"] = \
                 config["save_sampled_images_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(1)}"
         config["label"] = i
-        images = sample(**config)
+        if origin_batch_size <= 1000:
+            images = sample(**config)
+        else:  # config["batch_size"] > 500
+            for batch_index, j in enumerate(range(0, origin_batch_size, 1000)):
+                images = sample(batch_index=batch_index, **config)
