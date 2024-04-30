@@ -36,7 +36,7 @@ if __name__ == "__main__":
         config["LoRADDPM_path"] = \
                 config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i).zfill(1)}_number1150.pt"
         config["save_sampled_images_path"] = \
-                config["save_sampled_images_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(1)}"
+                config["save_sampled_images_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
         config["label"] = i
         if origin_batch_size <= 1000:
             images = sample(**config)

@@ -13,25 +13,26 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:0",
+        "device": "cuda:5",
         # paths setting
         "dataset": Image2SafetensorsDataset,
-        "path_to_images": "../../datasets/Styles",
-        "lora_data_path": "../../datasets/PixArt-LoRA-Dataset",
-        "vae_checkpoint_path": "./CheckpointVAE/AE-Transfer.pt",
-        "result_save_path": "./CheckpointDDPM/UNet-Transfer.pt",
+        "path_to_images": "../../datasets/MultiStyles",
+        "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer-1.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Transfer-1.pt",
         # diffusion structure
-        "num_channels": [64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
         # vae structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888+176*2,
-        "last_length": 255,
-        "kernel_size_ae": 9,
+        "d_model": [16, 32, 48, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_latent": 64,
+        "num_parameters": 860336+936*2,
+        "padding": 936,
+        "last_length": 421,
+        "kernel_size_vae": 9,
         "num_layers": -1,
         "not_use_var": True,
         "use_elu_activator": True,
@@ -40,12 +41,12 @@ if __name__ == "__main__":
         "weight_decay": 0.0,
         "epochs": 2000,
         "eta_min": 0.0,
-        "batch_size": 128,
+        "batch_size": 64,
         "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
-        "save_every": 20,
+        "save_every": 100,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")

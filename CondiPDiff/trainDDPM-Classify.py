@@ -7,8 +7,9 @@ from torch.utils.data import DataLoader
 from torch.optim import AdamW
 import torch
 from tqdm.auto import tqdm
-import os.path
+from torch.cuda.amp import autocast
 import wandb
+
 
 
 if __name__ == "__main__":
@@ -18,31 +19,31 @@ if __name__ == "__main__":
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify-1.pt",
         "result_save_path": "./CheckpointDDPM/UNet-Classify-1.pt",
         # diffusion structure
-        "num_channels": [32, 64, 128, 192, 256, 384, 32],
+        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
         # vae structure
-        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
-        "d_latent": 128,
+        "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_latent": 64,
         "kernel_size_vae": 7,
         "num_parameters": 54912+192*2,
         "half_padding": 192,
         "last_length": 108,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
-        "autocast": False,
+        "autocast": True,
         "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 1000,
+        "epochs": 2000,
         "eta_min": 0.0,
         "batch_size": 256,
-        "num_workers": 24,
+        "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
@@ -92,11 +93,12 @@ if __name__ == "__main__":
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with ((torch.cuda.amp.autocast(enabled=config["autocast"], dtype=torch.float16))):
+            with ((autocast(enabled = e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16))):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var)
-                loss = trainer(x_0 * 1.0, item.to(device))
+                    x_0 = x_0 * 0.01
+                loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
             scaler.step(optimizer)

@@ -18,15 +18,15 @@ if __name__ == "__main__":
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Classify-6.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Classify-1.pt",
         # small model structure
-        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
-        "d_latent": 128,
+        "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_latent": 64,
         "kernel_size": 7,
         "num_parameters": 54912+192*2,
         "half_padding": 192,
         "last_length": 108,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
         "autocast": True,
@@ -36,13 +36,10 @@ if __name__ == "__main__":
         "eta_min": 0.,
         "batch_size": 256,
         "num_workers": 32,
-        "save_every": 1000,
-        "kld_weight": 0.0001,
-        "kld_start_epoch": 8001,
+        "save_every": 100,
+        "kld_weight": 0.0,
+        "kld_start_epoch": 10000,
         "kld_rise_rate": 0.0,
-        "norm_weight": 0.0,
-        "norm_start_epoch": 8001,
-        "norm_rise_rate": 5e-7
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -77,7 +74,9 @@ if __name__ == "__main__":
             parameters = parameters.to(device)
             with autocast(enabled = e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
-                losses = model.loss_function(*output, kld_weight=config["kld_weight"], norm_weight=config["norm_weight"])
+                losses = model.loss_function(*output,
+                                             kld_weight=config["kld_weight"],
+                                             not_use_var=config["not_use_var"])
             scaler.scale(losses["loss"]).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -87,8 +86,6 @@ if __name__ == "__main__":
         if (e+1)%config["save_every"] == 0:
             torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
             model.to(device)
-        if (e+1) > config["norm_start_epoch"]:
-            config["norm_weight"] += config["norm_rise_rate"]
         if (e+1) > config["kld_start_epoch"]:
             config["kld_weight"] += config["kld_rise_rate"]
 
