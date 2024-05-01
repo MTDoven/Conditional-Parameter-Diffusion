@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
@@ -26,18 +26,18 @@ if __name__ == "__main__":
         "num_parameters": 54912+192*2,
         "half_padding": 192,
         "last_length": 108,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
-        "autocast": True,
-        "lr": 0.0003,
+        "autocast": False,
+        "lr": 0.0005,
         "weight_decay": 0.0,
-        "epochs": 1000,
+        "epochs": 100,
         "eta_min": 0.,
         "batch_size": 256,
         "num_workers": 32,
         "save_every": 100,
-        "kld_weight": 0.0,
+        "kld_weight": 1e-10,
         "kld_start_epoch": 10000,
         "kld_rise_rate": 0.0,
     }
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                             num_workers=config["num_workers"],
                             pin_memory=True,
                             shuffle=True,
-                            persistent_workers=False)
+                            persistent_workers=True)
     scaler = torch.cuda.amp.GradScaler()
 
     wandb.watch(model)
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             wandb.log(losses)
 
         scheduler.step()
-        if (e+1)%config["save_every"] == 0:
+        if (e+1) % config["save_every"] == 0:
             torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
             model.to(device)
         if (e+1) > config["kld_start_epoch"]:

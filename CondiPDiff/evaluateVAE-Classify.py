@@ -19,13 +19,13 @@ if __name__ == "__main__":
         "path_to_loras": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
         "path_to_save": "../DDPM-Classify-CIFAR10/CheckpointGenLoRA",
         # vae structure
-        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
-        "d_latent": 128,
+        "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_latent": 64,
         "kernel_size": 7,
         "num_parameters": 54912+192*2,
         "half_padding": 192,
         "last_length": 108,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
     }
 

@@ -12,19 +12,20 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:2",
+        "device": "cuda:5",
         # paths setting
         "dataset": Image2SafetensorsDataset,
-        "VAE_path": "./CheckpointVAE/VAE-Transfer-final-notusevar.pt.1199.dict",
-        "path_to_loras": "../../datasets/PixArt-LoRA-Dataset",
-        "path_to_images": "../../datasets/Styles",
-        "path_to_save": "../PixArt-StyleTrans-COCO/CheckpointLoRAGen",
-        "adapter_config_path": "../PixArt-StyleTrans-COCO/CheckpointStyleDataset/adapter_config.json",
+        "VAE_path": "./CheckpointVAE/VAE-Transfer-2.pt.5999",
+        "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "path_to_images": "../../datasets/MultiStyles",
+        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # vae structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888+176*2,
-        "last_length": 255,
+        "d_model": [16, 32, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_latent": 64,
+        "num_parameters": 860336+424*2,
+        "padding": 424,
+        "last_length": 841,
         "kernel_size": 9,
         "num_layers": -1,
         "not_use_var": True,
@@ -34,9 +35,9 @@ if __name__ == "__main__":
     device = config["device"]
     model = VAE(d_model=config["d_model"],
                 d_latent=config["d_latent"],
-                kernel_size=config["kernel_size"],
                 num_parameters=config["num_parameters"],
                 last_length=config["last_length"],
+                kernel_size=config["kernel_size"],
                 num_layers=config["num_layers"],
                 use_elu_activator=config["use_elu_activator"],)
     model.load_state_dict(torch.load(config["VAE_path"]))
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     # evaluate
     model.eval()
     with torch.no_grad():
-        for i in range(10):
+        for i in range(16):
             for index in range(len(dataset)):
                 image, param, item, prompt = dataset[index]
                 if item == i:

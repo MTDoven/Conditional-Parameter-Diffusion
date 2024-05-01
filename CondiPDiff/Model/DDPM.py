@@ -243,7 +243,7 @@ class ODUNetTransfer(ODUNetBase):
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
             nn.LeakyReLU(),
             nn.Linear(1000, d_latent*2),
-            nn.LeakyReLU(),
+            nn.Softmax(),
             nn.Linear(d_latent*2, d_latent),
         )
 

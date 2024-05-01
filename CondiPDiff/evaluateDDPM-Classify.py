@@ -14,27 +14,27 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
-        "UNet_path": "./CheckpointDDPM/UNet-Classify-1.pt",
+        "UNet_path": "./CheckpointDDPM/UNet-Classify.pt",
         "VAE_path": "./CheckpointVAE/VAE-Classify.pt",
         "path_to_loras": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
         "path_to_save": "../DDPM-Classify-CIFAR10/CheckpointGenLoRA",
         # ddpm structure
-        "num_channels": [32, 64, 128, 192, 256, 384, 32],
+        "num_channels": [64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
         # model structure
-        "d_model": [64, 96, 128, 192, 256, 384, 512, 768, 128],
-        "d_latent": 128,
+        "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_latent": 64,
         "kernel_size_vae": 7,
         "num_parameters": 54912+192*2,
         "half_padding": 192,
         "last_length": 108,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
         "batch_size": 10,
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         condition = torch.tensor([i for i in range(config["batch_size"])])
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled * 1.0, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled * 20.0, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
     for i, param in enumerate(gen_parameters):

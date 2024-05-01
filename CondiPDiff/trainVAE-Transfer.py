@@ -14,33 +14,33 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:3",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "image_data_path": "../../datasets/MultiStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-1.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-3.pt",
         # big model structure
-        "d_model": [16, 32, 48, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_model": [32, 64, 128, 192, 256, 384, 512, 768, 1024, 64],
         "d_latent": 64,
-        "num_parameters": 860336+936*2,
-        "padding": 936,
-        "last_length": 421,
+        "num_parameters": 860336+424*2,
+        "padding": 424,
+        "last_length": 841,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
-        "autocast": True,
-        "lr": 0.0003,
+        "autocast": False,
+        "lr": 0.0005,
         "weight_decay": 0.0,
-        "epochs": 5000,
+        "epochs": 10000,
         "eta_min": 0.,
-        "batch_size": 64,
-        "num_workers": 32,
-        "save_every": 500,
-        "kld_weight": 0.0,
+        "batch_size": 32,
+        "num_workers": 8,
+        "save_every": 1000,
+        "kld_weight": 1e-10,
         "kld_start_epoch": 10000,
         "kld_rise_rate": 0.0,
     }
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         for *condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            with autocast(enabled = e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16):
+            with autocast(enabled=config["autocast"], dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
                 losses = model.loss_function(*output,
                                              kld_weight=config["kld_weight"],

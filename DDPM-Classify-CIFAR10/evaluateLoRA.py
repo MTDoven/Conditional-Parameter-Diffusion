@@ -60,7 +60,7 @@ def sample(**config):
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
         "LoRADDPM_path": "./CheckpointGenLoRA/class00.pt",
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         # training setting
         "beta_1": 1e-4,
         "beta_T": 0.02,
-        "batch_size": 50,
+        "batch_size": 500,
         # variable setting
         "label": 0,
     }

@@ -15,14 +15,14 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # paths setting
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify-1.pt",
-        "result_save_path": "./CheckpointDDPM/UNet-Classify-1.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Classify.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Classify.pt",
         # diffusion structure
-        "num_channels": [32, 64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 10,
         "kernel_size": 3,
@@ -34,13 +34,13 @@ if __name__ == "__main__":
         "num_parameters": 54912+192*2,
         "half_padding": 192,
         "last_length": 108,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
-        "autocast": True,
+        "autocast": False,
         "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 2000,
+        "epochs": 1800,
         "eta_min": 0.0,
         "batch_size": 256,
         "num_workers": 32,
@@ -97,7 +97,7 @@ if __name__ == "__main__":
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var)
-                    x_0 = x_0 * 0.01
+                    x_0 = x_0 * 0.05
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])
