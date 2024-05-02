@@ -15,13 +15,13 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # paths setting
         "dataset": Image2SafetensorsDataset,
-        "VAE_path": "./CheckpointVAE/VAE-Transfer-2.pt.5999",
+        "VAE_path": "./CheckpointVAE/VAE-Transfer-1.pt.5999",
         "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
         "path_to_images": "../../datasets/MultiStyles",
         "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # vae structure
-        "d_model": [16, 32, 64, 96, 128, 192, 256, 384, 512, 64],
+        "d_model": [16, 32, 64, 12256, 384, 512, 768, 1024, 64],
         "d_latent": 64,
         "num_parameters": 860336+424*2,
         "padding": 424,

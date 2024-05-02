@@ -11,23 +11,25 @@ import torch
 import wandb
 
 
+
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
+        "checkpoint": None,
         "image_data_path": "../../datasets/MultiStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-3.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-2.pt",
         # big model structure
-        "d_model": [32, 64, 128, 192, 256, 384, 512, 768, 1024, 64],
+        "d_model": [16, 32, 64, 128, 192, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 64,
-        "num_parameters": 860336+424*2,
-        "padding": 424,
-        "last_length": 841,
-        "kernel_size": 9,
+        "num_parameters": 860336+1960*2,
+        "padding": 1960,
+        "last_length": 211,
+        "kernel_size": 11,
         "num_layers": -1,
         "not_use_var": False,
         "use_elu_activator": True,
@@ -35,12 +37,12 @@ if __name__ == "__main__":
         "autocast": False,
         "lr": 0.0005,
         "weight_decay": 0.0,
-        "epochs": 10000,
+        "epochs": 300,
         "eta_min": 0.,
-        "batch_size": 32,
+        "batch_size": 56,
         "num_workers": 8,
-        "save_every": 1000,
-        "kld_weight": 1e-10,
+        "save_every": 10,
+        "kld_weight": 0.0,
         "kld_start_epoch": 10000,
         "kld_rise_rate": 0.0,
     }
@@ -56,7 +58,15 @@ if __name__ == "__main__":
                 kernel_size=config["kernel_size"],
                 num_layers=config["num_layers"],
                 use_elu_activator=config["use_elu_activator"],)
+    if config.get("checkpoint") is not None:
+        model.load_state_dict(torch.load(config["checkpoint"], map_location="cpu"))
+    try:
+        torch.set_float32_matmul_precision('high')
+        model = torch.compile(model, mode="default")
+    except Exception as e:
+        print(e)
     model = model.to(device)
+
     optimizer = AdamW(model.parameters(),
                       lr=config["lr"],
                       weight_decay=config["weight_decay"],)

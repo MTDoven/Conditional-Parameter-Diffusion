@@ -10,11 +10,11 @@ from evaluateLoRA import sample
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:4",
         # path setting
         "BaseDDPM_path": "./CheckpointBaseDDPM/BaseDDPM.pt",
-        "LoRADDPM_path": "./CheckpointGenLoRA/class00.pt",
-        "save_sampled_images_path": "../../datasets/Generated/GenCIFAR10/class00",
+        "LoRADDPM_path": None,  # "./CheckpointGenLoRA/class00.pt",
+        "save_sampled_images_path": "../../datasets/Generated/EmptyCIFAR10/class00",
         # model structure
         "T": 1000,
         "channel": 128,
@@ -32,15 +32,17 @@ if __name__ == "__main__":
 
     origin_batch_size = config["batch_size"]
     config["batch_size"] = 1000
-    for i in range(10):
+    for i in range(0, 10, 1):
         # config["LoRADDPM_path"] = \
         #         config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/lora_class{str(i).zfill(1)}_number1150.pt"
-        config["LoRADDPM_path"] = \
-                config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}.pt"
+        if config.get("LoRADDPM_path"):
+            config["LoRADDPM_path"] = \
+                    config["LoRADDPM_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}.pt"
         config["save_sampled_images_path"] = \
                 config["save_sampled_images_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
         config["label"] = i
         if origin_batch_size <= 1000:
+            config["batch_size"] = origin_batch_size
             images = sample(**config)
         else:  # config["batch_size"] > 500
             for batch_index, j in enumerate(range(0, origin_batch_size, 1000)):

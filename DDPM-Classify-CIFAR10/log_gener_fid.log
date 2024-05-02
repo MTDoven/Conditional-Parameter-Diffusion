@@ -1,0 +1,112 @@
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class00" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class00" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 15.593747797500441
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class00 generated fid: 15.593747797500441
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class01" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class01" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 12.808134574904841
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class01 generated fid: 12.808134574904841
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class02" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class02" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 15.692751027380268
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class02 generated fid: 15.692751027380268
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class03" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class03" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 14.055380631205196
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class03 generated fid: 14.055380631205196
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class04" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class04" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 10.138362700934692
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class04 generated fid: 10.138362700934692
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class05" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class05" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 17.091475027406204
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class05 generated fid: 17.091475027406204
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class06" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class06" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 10.018429475029166
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class06 generated fid: 10.018429475029166
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class07" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class07" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 12.565079589885158
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class07 generated fid: 12.565079589885158
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class08" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class08" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 10.05986522450678
+Creating feature extractor "inception-v3-compat" with features ['2048']
+class08 generated fid: 10.05986522450678
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/Generated/GenCIFAR10/class09" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseCIFAR10/class09" with extensions png,jpg,jpeg
+Found 10000 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 14.008277976224747
+class09 generated fid: 14.008277976224747
+========================================================================
+final result: 13.20315040249775

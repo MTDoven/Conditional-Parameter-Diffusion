@@ -41,7 +41,7 @@ def inference_with_lora(prompt: list, lora_path, model_path="./PixArt-XL-256", d
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "LoRAModel_path": "./CheckpointGenLoRA/class00",

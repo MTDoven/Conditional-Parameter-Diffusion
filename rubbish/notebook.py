@@ -9,7 +9,7 @@
 import torch
 from safetensors.torch import load_file, save_file
 
-x = torch.load("/home/wangkai/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointLoRAGen-bs256/class00.pt")
+#x = torch.load("/home/wangkai/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointLoRAGen-bs256/class00.pt")
 #y = torch.load("../datasets/CIFAR10-LoRA-Dataset/lora_class0_number0.pt")
 #
 # for i in range(10):
@@ -24,8 +24,8 @@ x = torch.load("/home/wangkai/cpdiff/condipdiff/DDPM-Classify-CIFAR100/Checkpoin
 #                 print(e)
 
 
-for name, param1 in x.items():
-    print(name, len(param1.flatten()))
+# for name, param1 in x.items():
+#     print(name, len(param1.flatten()))
 
 #
 # for name, param2 in y.items():
@@ -52,13 +52,15 @@ for name, param1 in x.items():
 # import torch
 # from safetensors.torch import load_file
 #
-# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-COCO/lora_result_9_0/adapter_model.safetensors", device="cpu")
-# for key, value in x.items():
-#     print(key, value[0])
-#     break
-#
-# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-COCO/lora_result_9_0/transformer_lora/pytorch_lora_weights.safetensors", device="cpu")
-# for key, value in x.items():
-#     print(key, value[0])
+x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointGenLoRA/class00/adapter_model.safetensors", device="cpu")
+for key, value in x.items():
+    print(value.flatten()[:20])
+    break
+
+print("-----------------------------------------------------------------")
+x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class00_group0_number0/pytorch_lora_weights.safetensors", device="cpu")
+for key, value in x.items():
+    print(value.flatten()[:20])
+    break
 
 

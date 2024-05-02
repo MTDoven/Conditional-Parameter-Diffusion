@@ -222,6 +222,15 @@ class ODUNetClassify(ODUNetBase):
         self.class_encode = nn.Embedding(num_class, d_latent)
 
 
+class GumbelSoftmax(nn.Module):
+    def __init__(self, tau=0.5, hard=True):
+        super().__init__()
+        self.tau = tau
+        self.hard = hard
+    def forward(self, logits):
+        return F.gumbel_softmax(logits, tau=self.tau, hard=self.hard)
+
+
 class ODUNetTransfer(ODUNetBase):
     def __init__(self, d_latent, num_channels, T, num_class,
                  in_channel=1, fold_rate=1, kernel_size=7, **kwargs):
@@ -243,7 +252,7 @@ class ODUNetTransfer(ODUNetBase):
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
             nn.LeakyReLU(),
             nn.Linear(1000, d_latent*2),
-            nn.Softmax(),
+            GumbelSoftmax(tau=0.5, hard=True),
             nn.Linear(d_latent*2, d_latent),
         )
 

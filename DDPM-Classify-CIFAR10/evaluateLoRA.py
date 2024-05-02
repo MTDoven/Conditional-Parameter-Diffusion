@@ -1,7 +1,6 @@
 import os
 import torch
 from Diffusion.Diffusion import GaussianDiffusionSampler
-from LoRA.Model import UNet
 from Classifier.inference import inference
 from PIL import Image
 
@@ -10,15 +9,29 @@ def sample(**config):
     device = torch.device(config["device"])
 
     # model setup
-    unet = UNet(
-        T=config["T"],
-        ch=config["channel"],
-        ch_mult=config["channel_mult"],
-        attn=config["attn"],
-        num_res_blocks=config["num_res_blocks"],
-        dropout=0.,)
-    base_model_dict = torch.load(config["BaseDDPM_path"])
-    lora_param_dict = torch.load(config["LoRADDPM_path"])
+    if config.get("LoRADDPM_path"):
+        from LoRA.Model import UNet
+        unet = UNet(
+            T=config["T"],
+            ch=config["channel"],
+            ch_mult=config["channel_mult"],
+            attn=config["attn"],
+            num_res_blocks=config["num_res_blocks"],
+            dropout=0.,)
+        base_model_dict = torch.load(config["BaseDDPM_path"], map_location="cpu")
+        lora_param_dict = torch.load(config["LoRADDPM_path"], map_location="cpu")
+    else:  # not use lora
+        from Diffusion.Model import UNet
+        unet = UNet(
+            T=config["T"],
+            ch=config["channel"],
+            ch_mult=config["channel_mult"],
+            attn=config["attn"],
+            num_res_blocks=config["num_res_blocks"],
+            dropout=0.,)
+        base_model_dict = torch.load(config["BaseDDPM_path"], map_location="cpu")
+        lora_param_dict = {}
+
     unet.load_state_dict({**base_model_dict, **lora_param_dict})
     unet = unet.to(device)
     sampler = GaussianDiffusionSampler(
