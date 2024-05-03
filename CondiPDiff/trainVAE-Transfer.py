@@ -3,7 +3,7 @@ from Dataset import Image2SafetensorsDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from torch.nn import functional as F
-from torch.optim import AdamW, SGD
+from torch.optim import AdamW, SGD, Adam
 from tqdm.auto import tqdm
 from torch.cuda.amp import autocast as autocast
 import os.path
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "checkpoint": None,
         "image_data_path": "../../datasets/MultiStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-2.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-46.pt.299",
         # big model structure
         "d_model": [16, 32, 64, 128, 192, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 64,
@@ -31,17 +31,17 @@ if __name__ == "__main__":
         "last_length": 211,
         "kernel_size": 11,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
-        "autocast": False,
-        "lr": 0.0005,
+        "autocast": True,
+        "lr": 0.002,
         "weight_decay": 0.0,
         "epochs": 300,
-        "eta_min": 0.,
-        "batch_size": 56,
+        "eta_min": 1e-7,
+        "batch_size": 48,
         "num_workers": 8,
-        "save_every": 10,
+        "save_every": 30,
         "kld_weight": 0.0,
         "kld_start_epoch": 10000,
         "kld_rise_rate": 0.0,
@@ -60,14 +60,9 @@ if __name__ == "__main__":
                 use_elu_activator=config["use_elu_activator"],)
     if config.get("checkpoint") is not None:
         model.load_state_dict(torch.load(config["checkpoint"], map_location="cpu"))
-    try:
-        torch.set_float32_matmul_precision('high')
-        model = torch.compile(model, mode="default")
-    except Exception as e:
-        print(e)
     model = model.to(device)
 
-    optimizer = AdamW(model.parameters(),
+    optimizer = Adam(model.parameters(),
                       lr=config["lr"],
                       weight_decay=config["weight_decay"],)
     scheduler = CosineAnnealingLR(optimizer,
@@ -88,7 +83,7 @@ if __name__ == "__main__":
         for *condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            with autocast(enabled=config["autocast"], dtype=torch.bfloat16):
+            with autocast(enabled= e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
                 losses = model.loss_function(*output,
                                              kld_weight=config["kld_weight"],
