@@ -5,6 +5,7 @@ from Dataset import Image2SafetensorsDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
+from torch.cuda.amp import autocast
 import torch
 from tqdm.auto import tqdm
 import wandb
@@ -13,12 +14,12 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:6",
         # paths setting
         "dataset": Image2SafetensorsDataset,
         "path_to_images": "../../datasets/MultiStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer-1.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer.pt",
         "result_save_path": "./CheckpointDDPM/UNet-Transfer-1.pt",
         # diffusion structure
         "num_channels": [64, 128, 192, 256, 384, 512, 64],
@@ -26,22 +27,24 @@ if __name__ == "__main__":
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
+        "use_softmax": False,
         # vae structure
-        "d_model": [32, 64, 128, 192, 256, 384, 512, 768, 1024, 64],
+        "d_model": [16, 32, 64, 128, 192, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 64,
-        "num_parameters": 860336+424*2,
-        "padding": 424,
-        "last_length": 841,
-        "kernel_size_vae": 9,
+        "num_parameters": 860336+1960*2,
+        "padding": 1960,
+        "last_length": 211,
+        "kernel_size_vae": 11,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
+        "autocast": False,
         "lr": 0.002,
         "weight_decay": 0.0,
-        "epochs": 2000,
+        "epochs": 500,
         "eta_min": 0.0,
-        "batch_size": 64,
+        "batch_size": 128,
         "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
@@ -69,7 +72,7 @@ if __name__ == "__main__":
               d_latent=config["d_latent"],
               num_parameters=config["num_parameters"],
               last_length=config["last_length"],
-              kernel_size=config["kernel_size_ae"],
+              kernel_size=config["kernel_size_vae"],
               num_layers=config["num_layers"],
               use_elu_activator=config["use_elu_activator"],)
     vae.load_state_dict(torch.load(config["vae_checkpoint_path"]))
@@ -87,7 +90,7 @@ if __name__ == "__main__":
                             num_workers=config["num_workers"],
                             pin_memory=True,
                             shuffle=True,
-                            drop_last=True,
+                            drop_last=False,
                             persistent_workers=True,)
     scaler = torch.cuda.amp.GradScaler()
 
@@ -95,11 +98,11 @@ if __name__ == "__main__":
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
-            with ((torch.cuda.amp.autocast(enabled = e<config["epochs"]*0.8, dtype=torch.float16))):
+            with autocast(enabled=e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16):
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])
-                    x_0 = x_0 * 0.01
+                    x_0 = x_0 * 0.0025
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])

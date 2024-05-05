@@ -14,15 +14,15 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:5",
         # paths setting
         "dataset": Image2SafetensorsDataset,
         "UNet_path": "./CheckpointDDPM/UNet-Transfer.pt",
-        "VAE_path": "./CheckpointVAE/AE-Transfer.pt",
-        "path_to_loras": "../../datasets/PixArt-LoRA-Dataset",
-        "path_to_images": "../../datasets/Styles",
-        "path_to_save": "../PixArt-StyleTrans-COCO/CheckpointLoRAGen",
-        "adapter_config_path": "../PixArt-StyleTrans-COCO/CheckpointStyleDataset/adapter_config.json",
+        "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
+        "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "path_to_images": "../../datasets/MultiStyles",
+        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointLoRAGen",
+        "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
         "num_channels": [64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
@@ -30,11 +30,12 @@ if __name__ == "__main__":
         "kernel_size": 3,
         "num_layers_diff": -1,
         # model structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888+176*2,
-        "last_length": 255,
-        "kernel_size_ae": 9,
+        "d_model": [16, 32, 64, 128, 192, 256, 384, 512, 768, 1024, 1024, 64],
+        "d_latent": 64,
+        "num_parameters": 860336+1960*2,
+        "padding": 1960,
+        "last_length": 211,
+        "kernel_size_vae": 11,
         "num_layers": -1,
         "not_use_var": True,
         "use_elu_activator": True,
@@ -59,7 +60,7 @@ if __name__ == "__main__":
               d_latent=config["d_latent"],
               num_parameters=config["num_parameters"],
               last_length=config["last_length"],
-              kernel_size=config["kernel_size_ae"],
+              kernel_size=config["kernel_size_vae"],
               num_layers=config["num_layers"],
               use_elu_activator=config["use_elu_activator"],)
     vae.load_state_dict(torch.load(config["VAE_path"]))
@@ -88,7 +89,7 @@ if __name__ == "__main__":
         condition = torch.stack(condition)
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled * 100.0, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled * 400.0, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
     for i, param in enumerate(gen_parameters):
