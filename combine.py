@@ -2,8 +2,8 @@ from safetensors.torch import load_file, save_file
 import torch
 from tqdm import tqdm
 
-x = "/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class01_group0_number0/pytorch_lora_weights.safetensors"
-y = "/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class06_group0_number0/pytorch_lora_weights.safetensors"
+x = "/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class01_group0_number0/adapter_model.safetensors"
+y = "/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class06_group0_number0/adapter_model.safetensors"
 
 rank_2 = {}
 for i, ((name1, param1), (name2, param2)) in enumerate(zip(load_file(x).items(), load_file(y).items())):

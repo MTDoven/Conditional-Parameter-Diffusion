@@ -18,9 +18,10 @@ import shutil
 
 
 class Image2SafetensorsDataset(Dataset):
-    def __init__(self, path_to_loras, path_to_images, image_size=256):
+    def __init__(self, path_to_loras, path_to_images, image_size=256, padding=424, duplicate=100):
         self._eval = False
-        self.padding = 176
+        self.padding = padding
+        self.duplicate = duplicate
         self.path_to_images = path_to_images
         root, dirs, _ = next(os.walk(path_to_loras))
         self.files_path = [os.path.join(root, dir, "pytorch_lora_weights.safetensors")
@@ -39,12 +40,13 @@ class Image2SafetensorsDataset(Dataset):
         ])
 
     def __len__(self):
-        return self.length
+        return self.length * self.duplicate
 
     def __getitem__(self, item):
+        item = item % self.length
         file_path = self.files_path[item]
         # load image
-        label = re.search(r'class(\d+)', file_path).group(1)
+        label = file_path.split("class")[1][:2]
         dir = None
         for dir in os.listdir(self.path_to_images):
             if label in dir: break
@@ -52,7 +54,7 @@ class Image2SafetensorsDataset(Dataset):
         try:
             image = Image.open(os.path.join(self.path_to_images, dir, image_name)).convert("RGB")
         except PIL.UnidentifiedImageError:
-            return self[random.randint(0, self.length-1)]
+            return self[random.randint(0, self.length - 1)]
         image = self.transfer(image)
         # load param
         diction = load_file(file_path, device='cpu')
@@ -60,6 +62,12 @@ class Image2SafetensorsDataset(Dataset):
         for name, shape in self.param_structure:
             param = diction[name]
             assert param.shape == shape
+            if "lora_B" in name:
+                param = param * 100.
+            elif "lora_A" in name:
+                param = param * 0.1
+            else:  # wrong
+                raise RuntimeError
             this_param.append(param.flatten())
         this_param = torch.cat(this_param, dim=0)
         this_param = torch.cat([torch.zeros(self.padding), this_param, torch.zeros(self.padding)], dim=0)
@@ -72,9 +80,15 @@ class Image2SafetensorsDataset(Dataset):
         parameters = parameters[self.padding: -self.padding]
         param_dict_to_save = {}
         for name, shape in self.param_structure:
-            length_to_cut = reduce(lambda x, y: x*y, shape)
+            length_to_cut = reduce(lambda x, y: x * y, shape)
             param = parameters[:length_to_cut]
-            param_dict_to_save[name[5:]] = param.view(shape)  # [5:] is used to drop "unet." prefix
+            if "lora_B" in name:
+                param = param * 0.01
+            elif "lora_A" in name:
+                param = param * 10.
+            else:  # wrong
+                raise RuntimeError
+            param_dict_to_save[name[5:]] = param.view(shape)
             parameters = parameters[length_to_cut:]
         os.makedirs(save_path, exist_ok=True)
         save_file(param_dict_to_save, os.path.join(save_path, "adapter_model.safetensors"))
