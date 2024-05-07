@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:6",
+        "device": "cuda:7",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
         "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
         "path_to_images": "../../datasets/MultiStyles",
-        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointLoRAGen",
+        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
         "num_channels": [64, 128, 192, 256, 384, 512, 64],

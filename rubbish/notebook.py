@@ -9,7 +9,7 @@
 import torch
 from safetensors.torch import load_file, save_file
 
-#x = torch.load("/home/wangkai/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointLoRAGen-bs256/class00.pt")
+#x = torch.load("/home/wangkai/cpdiff/condipdiff/DDPM-Classify-CIFAR100/CheckpointGenLoRA-bs256/class00.pt")
 #y = torch.load("../datasets/CIFAR10-LoRA-Dataset/lora_class0_number0.pt")
 #
 # for i in range(10):

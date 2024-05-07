@@ -241,10 +241,10 @@ class ODUNetTransfer(ODUNetBase):
         self.time_encode = TimeEmbedding(T, num_channels[-1])
         self.class_encode = nn.Sequential(
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
-            nn.LeakyReLU() if not kwargs.get("use_softmax") else nn.Softmax(),
-            nn.Linear(1000, d_latent),
             nn.LeakyReLU(),
-            nn.Linear(d_latent, d_latent),
+            nn.Linear(1000, d_latent*2),
+            nn.LeakyReLU(),
+            nn.Linear(d_latent*2, d_latent),
         )
 
     def forward(self, input, condition, time, **kwargs):
