@@ -4,6 +4,7 @@ import random
 from inference import inference_with_lora
 from Dataset import Image2SafetensorsDataset
 from torchvision import transforms
+import pandas as pd
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -11,10 +12,11 @@ warnings.filterwarnings("ignore", category=UserWarning)
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:6",
+        "device": "cuda:7",
         # path setting
         "image_size": 256,
         "padding": 1960,
+        "prompts_file": "./CheckpointStyleDataset/prompts.csv",
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "path_to_loras": "./CheckpointTrainLoRA",
         "path_to_images": "../../datasets/MultiStyles",
@@ -22,8 +24,8 @@ if __name__ == "__main__":
         "save_sampled_images_path": "../../datasets/Generated/OriginMultiStyles/style00",
         # generating setting
         "batch_size": 100,
-        "total_number": 400,
-        "dtype": torch.float32,
+        "total_number": 20000,
+        "dtype": torch.float16,
         # variable setting
         "label": 0,
     }
@@ -32,22 +34,16 @@ if __name__ == "__main__":
                                        path_to_images=config["path_to_images"],
                                        image_size=config["image_size"],
                                        padding=config["padding"]).eval()
+    prompts_all = list(pd.read_csv(config["prompts_file"])['caption'])
 
-    for i in range(4, 16, 1):
+    for i in [6, 7, 8, 10]:
         config["label"] = i
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
 
-        for k in range(config["total_number"] // config["batch_size"]):
-
-            number = 0
-            prompts = []
-            while number < config["batch_size"]:
-                image, param, item, prompt = dataset[random.randint(0, len(dataset)-1)]
-                if item == i:
-                    prompts.append(prompt)
-                    number += 1
-
+        for k in range(0, config["total_number"], config["batch_size"]):
+            prompts = prompts_all[k: k+config["batch_size"]]
             print("\ngenerating: ", prompts)
+
             images = inference_with_lora(prompt=prompts,
                                          lora_path=config["LoRAModel_path"],
                                          model_path=config["BaseModel_path"],
