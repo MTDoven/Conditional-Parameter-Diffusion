@@ -14,8 +14,9 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:6",
         # paths setting
+        "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "UNet_path": "./CheckpointDDPM/UNet-Transfer.pt",
         "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
@@ -29,6 +30,7 @@ if __name__ == "__main__":
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
+        "use_softmax": False,
         # model structure
         "d_model": [16, 32, 64, 128, 192, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 64,
@@ -53,7 +55,8 @@ if __name__ == "__main__":
                 T=config["T"],
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
-                num_layers=config["num_layers_diff"],)
+                num_layers=config["num_layers_diff"],
+                use_softmax=config["use_softmax"], )
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],
@@ -71,9 +74,10 @@ if __name__ == "__main__":
         beta_T=config["beta_T"],
         T=config["T"])
     sampler = sampler.to(device)
-    dataset = config["dataset"](config["path_to_loras"], config["path_to_images"])
-    dataset.eval()
-
+    dataset = config["dataset"](path_to_loras=config["path_to_loras"],
+                                path_to_images=config["path_to_images"],
+                                image_size=config["image_size"],
+                                padding=config["padding"],).eval()
 
     unet.eval()
     vae.eval()

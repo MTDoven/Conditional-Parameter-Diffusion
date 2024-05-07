@@ -11,18 +11,18 @@ warnings.filterwarnings("ignore", category=UserWarning)
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:6",
         # path setting
         "image_size": 256,
         "padding": 1960,
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "path_to_loras": "./CheckpointTrainLoRA",
         "path_to_images": "../../datasets/MultiStyles",
-        "LoRAModel_path": "./CheckpointGenLoRA/class00",
+        "LoRAModel_path": "./CheckpointOriginLoRA/class00",
         "save_sampled_images_path": "../../datasets/Generated/OriginMultiStyles/style00",
         # generating setting
         "batch_size": 100,
-        "total_number": 20000,
+        "total_number": 400,
         "dtype": torch.float32,
         # variable setting
         "label": 0,
@@ -33,7 +33,7 @@ if __name__ == "__main__":
                                        image_size=config["image_size"],
                                        padding=config["padding"]).eval()
 
-    for i in range(0, 4, 1):
+    for i in range(4, 16, 1):
         config["label"] = i
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
 

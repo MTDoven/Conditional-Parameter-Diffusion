@@ -74,7 +74,7 @@ if __name__ == "__main__":
             print()
             dataset.save_param_dict(
                 save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}"),
-                parameters=param,
+                parameters=recons,
                 adapter_config_path=config["adapter_config_path"],)
     print(f"\nGenerated parameters saved to {config['path_to_save']}")
 
