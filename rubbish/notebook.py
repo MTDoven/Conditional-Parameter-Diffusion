@@ -52,15 +52,16 @@ from safetensors.torch import load_file, save_file
 # import torch
 # from safetensors.torch import load_file
 #
-x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointGenLoRA/class00/adapter_model.safetensors", device="cpu")
+x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/lora_result_9_0/checkpoint-1/adapter_model.safetensors", device="cpu")
 for key, value in x.items():
-    print(value.flatten()[:20])
-    break
+    if "to_out.0" in key:
+        print(key, value.shape)
 
-print("-----------------------------------------------------------------")
-x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class00_group0_number0/pytorch_lora_weights.safetensors", device="cpu")
-for key, value in x.items():
-    print(value.flatten()[:20])
-    break
+
+# print("-----------------------------------------------------------------")
+# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class00_group0_number0/pytorch_lora_weights.safetensors", device="cpu")
+# for key, value in x.items():
+#     print(value.flatten()[:20])
+#     break
 
 

@@ -7,10 +7,7 @@
 /CondiPDiff/wandb/
 /CondiPDiff/CheckpointDDPM/
 /CondiPDiff/CheckpointVAE/
-/PixArt-StyleTrans-COCO/CheckpointLoRAGen/
-/PixArt-StyleTrans-COCO/CheckpointStyleDataset/
-/PixArt-StyleTrans-COCO/wandb/
-/PixArt-StyleTrans-COCO/temp/
-/PixArt-StyleTrans-COCO/CheckpointStyleDataset/
 /DDPM-Classify-CIFAR10/Classifier/Classifier/
 /PixArt-StyleTrans-Comp/CheckpointTrainLoRA/
+/PixArt-StyleTrans-Comp/CheckpointGenLoRA/
+/PixArt-StyleTrans-Comp/CheckpointOriginLoRA/

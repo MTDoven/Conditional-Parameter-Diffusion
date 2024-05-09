@@ -46,7 +46,7 @@ class Image2SafetensorsDataset(Dataset):
         item = item % self.length
         file_path = self.files_path[item]
         # load image
-        label = file_path.split("class")[1][:2]
+        label = file_path.split("class")[1][:1]
         dir = None
         for dir in os.listdir(self.path_to_images):
             if label in dir: break
@@ -62,12 +62,6 @@ class Image2SafetensorsDataset(Dataset):
         for name, shape in self.param_structure:
             param = diction[name]
             assert param.shape == shape
-            if "lora_B" in name:
-                param = param * 100.
-            elif "lora_A" in name:
-                param = param * 0.1
-            else:  # wrong
-                raise RuntimeError
             this_param.append(param.flatten())
         this_param = torch.cat(this_param, dim=0)
         this_param = torch.cat([torch.zeros(self.padding), this_param, torch.zeros(self.padding)], dim=0)
@@ -82,12 +76,6 @@ class Image2SafetensorsDataset(Dataset):
         for name, shape in self.param_structure:
             length_to_cut = reduce(lambda x, y: x * y, shape)
             param = parameters[:length_to_cut]
-            if "lora_B" in name:
-                param = param * 0.01
-            elif "lora_A" in name:
-                param = param * 10.
-            else:  # wrong
-                raise RuntimeError
             param_dict_to_save[name[5:]] = param.view(shape)
             parameters = parameters[length_to_cut:]
         os.makedirs(save_path, exist_ok=True)

@@ -51,10 +51,10 @@ if __name__ == "__main__":
                     "A grain on a train track with multiple cars attached",
                     "Two girls playing in the beach",
                     "a lady sitting against a building on her cell phone smoking a cigaret",],
-        "dtype": torch.float32,
+        "dtype": torch.float16,
     }
 
-    for i in range(16):
+    for i in range(10):
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
         images = inference_with_lora(prompt=config["prompts"],
                                      lora_path=config["LoRAModel_path"],

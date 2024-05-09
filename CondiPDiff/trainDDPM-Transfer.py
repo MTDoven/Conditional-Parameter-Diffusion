@@ -49,7 +49,7 @@ if __name__ == "__main__":
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
-        "save_every": 100,
+        "save_every": 20,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")

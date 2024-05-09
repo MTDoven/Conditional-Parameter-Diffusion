@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "UNet_path": "./CheckpointDDPM/UNet-Transfer.pt",
         "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
         "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "path_to_images": "../../datasets/MultiStyles",
+        "path_to_images": "../../datasets/Styles",
         "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
@@ -30,14 +30,13 @@ if __name__ == "__main__":
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
-        "use_softmax": False,
         # model structure
-        "d_model": [16, 32, 64, 128, 192, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 64,
-        "num_parameters": 860336+1960*2,
-        "padding": 1960,
-        "last_length": 211,
-        "kernel_size_vae": 11,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
+        "d_latent": 128,
+        "num_parameters": 521888 + 176 * 2,
+        "padding": 176,
+        "last_length": 255,
+        "kernel_size_vae": 9,
         "num_layers": -1,
         "not_use_var": True,
         "use_elu_activator": True,
@@ -55,8 +54,7 @@ if __name__ == "__main__":
                 T=config["T"],
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
-                num_layers=config["num_layers_diff"],
-                use_softmax=config["use_softmax"], )
+                num_layers=config["num_layers_diff"])
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],
@@ -66,7 +64,14 @@ if __name__ == "__main__":
               kernel_size=config["kernel_size_vae"],
               num_layers=config["num_layers"],
               use_elu_activator=config["use_elu_activator"],)
-    vae.load_state_dict(torch.load(config["VAE_path"]))
+    diction = torch.load(config["VAE_path"], map_location="cpu")
+    new_diction = {}
+    for name, param in diction.items():
+        if "_orig_mod" in name:
+            new_diction[name.split(".", 1)[1]] = param
+        else:  # not orig_mod
+            break
+    vae.load_state_dict(new_diction)
     vae = vae.to(device)
     sampler = GaussianDiffusionSampler(
         model=unet,
