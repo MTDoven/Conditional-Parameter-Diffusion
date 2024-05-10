@@ -172,10 +172,12 @@ class ODUnetDecoder(nn.Module):
         return y
 
 class MiddleLayers(nn.Module):
-    def __init__(self, d_latent, last_channel):
+    def __init__(self, d_latent, last_channel, **kwargs):
         super().__init__()
-        self.layer = nn.Linear(d_latent * last_channel, d_latent * last_channel)
-
+        if not kwargs.get("not_use_fc"):
+            self.layer = nn.Linear(d_latent * last_channel, d_latent * last_channel)
+        else:  # not use full connect
+            self.layer = nn.Identity()
     def forward(self, x0, time_emb, condi_emb, **kwargs):
         x1 = self.layer(torch.flatten(x0 + time_emb, start_dim=1)).view(x0.shape)
         return F.leaky_relu(x1) + time_emb + condi_emb
@@ -237,7 +239,7 @@ class ODUNetTransfer(ODUNetBase):
         dec_channel_list = dec_channel_list + [in_channel]
         self.encoder = ODUnetEncoder(enc_dim_list, enc_channel_list, kernel_size)
         self.decoder = ODUnetDecoder(dec_dim_list, dec_channel_list, kernel_size)
-        self.middle = MiddleLayers(d_latent, num_channels[-1])
+        self.middle = MiddleLayers(d_latent, num_channels[-1], **kwargs)
         self.time_encode = TimeEmbedding(T, num_channels[-1])
         self.class_encode = nn.Sequential(
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
@@ -246,6 +248,9 @@ class ODUNetTransfer(ODUNetBase):
             nn.LeakyReLU(),
             nn.Linear(d_latent*2, d_latent),
         )
+        if kwargs.get("freeze_extractor"):
+            for name, param in self.class_encode[0].named_parameters():
+                param.requires_grad = False
 
     def forward(self, input, condition, time, **kwargs):
         time_emb = self.time_encode(time)[:, :, None]

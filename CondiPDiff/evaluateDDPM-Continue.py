@@ -1,7 +1,7 @@
 from Model.DDPM import ODUNetTransfer as UNet
 from Model.DDPM import GaussianDiffusionTrainer, GaussianDiffusionSampler
 from Model.VAE import OneDimVAE as VAE
-from Dataset import Image2SafetensorsDataset
+from Dataset import ContiImage2SafetensorsDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
@@ -14,31 +14,33 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
-        "dataset": Image2SafetensorsDataset,
-        "UNet_path": "./CheckpointDDPM/UNet-Transfer.pt",
-        "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
-        "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "path_to_images": "../../datasets/Styles",
-        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
-        "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
+        "dataset": ContiImage2SafetensorsDataset,
+        "UNet_path": "./CheckpointDDPM/UNet-Continue-1.pt",
+        "VAE_path": "./CheckpointVAE/VAE-Continue-2048-1.pt.99",
+        "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
+        "path_to_images": "../../datasets/ContiStyles",
+        "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
-        "num_channels": [64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [64, 128, 192, 256, 384, 512, 8],
         "T": 1000,
-        "num_class": 10,
-        "kernel_size": 3,
+        "num_class": 1000,
+        "kernel_size": 5,
         "num_layers_diff": -1,
+        "not_use_fc": False,
+        "freeze_extractor": False,
         # model structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888 + 176 * 2,
-        "padding": 176,
-        "last_length": 255,
-        "kernel_size_vae": 9,
+        "d_model": [16, 32, 64, 128, 256, 512, 1024, 32],
+        "d_latent": 2048,
+        "num_parameters": 516096,
+        "padding": 0,
+        "last_length": 2016,
+        "kernel_size_vae": 13,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
         "batch_size": 10,
@@ -54,7 +56,9 @@ if __name__ == "__main__":
                 T=config["T"],
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
-                num_layers=config["num_layers_diff"])
+                num_layers=config["num_layers_diff"],
+                not_use_fc=config["not_use_fc"],
+                freeze_extractor=config["freeze_extractor"])
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],
@@ -88,22 +92,22 @@ if __name__ == "__main__":
     vae.eval()
     with torch.no_grad():
         condition = []
-        for i in range(10):
+        for i in range(0, 1000, 100):
             for index in range(len(dataset)):
                 image, param, item, prompt = dataset[index]
                 if item == i:
                     condition.append(image)
-                    print("\r", item, prompt, end="")
+                    print("\r", item, end="")
                     break
         condition = torch.stack(condition)
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled * 400.0, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
-    for i, param in enumerate(gen_parameters):
+    for i, param in zip(range(0, 1000, 100), gen_parameters):
         dataset.save_param_dict(
-            save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}"),
+            save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(3)}"),
             parameters=param,
             adapter_config_path=config["adapter_config_path"], )
     print(f"Generated parameters saved to {config['path_to_save']}")

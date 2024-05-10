@@ -52,9 +52,11 @@ from safetensors.torch import load_file, save_file
 # import torch
 # from safetensors.torch import load_file
 #
-x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/lora_result_9_0/checkpoint-1/adapter_model.safetensors", device="cpu")
+x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Conti/CheckpointOriginLoRA/class500/adapter_model.safetensors", device="cpu")
 for key, value in x.items():
-    if "to_out.0" in key:
+    # if "lora_B" in key:
+    #     print(value.abs().max())
+    if value.flatten().shape[0] != 1152 * 2:
         print(key, value.shape)
 
 

@@ -1,7 +1,7 @@
 from Model.DDPM import ODUNetTransfer as UNet
 from Model.DDPM import GaussianDiffusionTrainer
 from Model.VAE import OneDimVAE as VAE
-from Dataset import Image2SafetensorsDataset
+from Dataset import ContiImage2SafetensorsDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
@@ -14,38 +14,40 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
-        "dataset": Image2SafetensorsDataset,
-        "path_to_images": "../../datasets/Styles",
-        "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer.pt",
-        "result_save_path": "./CheckpointDDPM/UNet-Transfer.pt",
+        "dataset": ContiImage2SafetensorsDataset,
+        "path_to_images": "../../datasets/ContiStyles",
+        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-2048-1.pt.99",
+        "result_save_path": "./CheckpointDDPM/UNet-Continue-3.pt",
         # diffusion structure
-        "num_channels": [64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [64, 128, 256, 384, 512, 768, 1024, 1024, 1024],
         "T": 1000,
-        "num_class": 10,
-        "kernel_size": 3,
+        "num_class": 1000,
+        "kernel_size": 5,
         "num_layers_diff": -1,
+        "not_use_fc": True,
+        "freeze_extractor": False,
         # vae structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888 + 176 * 2,
-        "padding": 176,
-        "last_length": 255,
-        "kernel_size_vae": 9,
+        "d_model": [16, 32, 64, 128, 256, 512, 1024, 32],
+        "d_latent": 2048,
+        "num_parameters": 516096,
+        "padding": 0,
+        "last_length": 2016,
+        "kernel_size_vae": 13,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
-        "autocast": False,
-        "lr": 0.002,
+        "autocast": True,
+        "lr": 0.001,
         "weight_decay": 0.0,
-        "epochs": 120,
+        "epochs": 100,
         "eta_min": 0.0,
-        "batch_size": 128,
-        "num_workers": 24,
+        "batch_size": 64,
+        "num_workers": 8,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
@@ -61,7 +63,9 @@ if __name__ == "__main__":
                 T=config["T"],
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
-                num_layers=config["num_layers_diff"],)
+                num_layers=config["num_layers_diff"],
+                not_use_fc=config["not_use_fc"],
+                freeze_extractor=config["freeze_extractor"])
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(unet,
                                        beta_1=config["beta_1"],
@@ -104,7 +108,6 @@ if __name__ == "__main__":
                             persistent_workers=True,)
     scaler = torch.cuda.amp.GradScaler()
 
-    wandb.watch(unet)
     for e in tqdm(range(config["epochs"])):
         for i, (item, param) in enumerate(dataloader):
             optimizer.zero_grad()
@@ -112,7 +115,6 @@ if __name__ == "__main__":
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])
-                    x_0 = x_0 * 0.01
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])

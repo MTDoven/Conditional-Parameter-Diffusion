@@ -1,5 +1,7 @@
 from diffusers import PixArtAlphaPipeline, Transformer2DModel
 from peft import PeftModel
+import random
+import numpy as np
 import torch
 
 
@@ -41,18 +43,27 @@ def inference_with_lora(prompt: list, lora_path, model_path="./PixArt-XL-256", d
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:4",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "LoRAModel_path": "./CheckpointOriginLoRA/class000",
         "save_sampled_images_path": "./temp",
-        "prompts": ["A baby elephant standing next to it's parents",
-                    "a lamp post and a fire hydrant in front of a bench",
-                    "A grain on a train track with multiple cars attached",
-                    "Two girls playing in the beach",
-                    "a lady sitting against a building on her cell phone smoking a cigaret",],
-        "dtype": torch.float16,
+        "prompts": ["A large tree on the field",
+                    "A house alongside a tree",
+                    "A large tree on the field",
+                    "A house alongside a tree",
+                    "A large tree on the field"],
+        "dtype": torch.float32,
+        "seed": 43
     }
+
+    def setup_seed(seed):
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        np.random.seed(seed)
+        random.seed(seed)
+        torch.backends.cudnn.deterministic = True
+    setup_seed(config["seed"])
 
     for i in range(0, 1000, 100):
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(3)}"
