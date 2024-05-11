@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:1",
         # path setting
         "image_size": 256,
         "padding": 176,
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     prompts_all = list(pd.read_csv(config["prompts_file"])['caption'])
 
-    for i in [0, 2, 4, 8]:
+    for i in [7]:
         config["label"] = i
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
 

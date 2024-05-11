@@ -14,21 +14,21 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "path_to_images": "../../datasets/ContiStyles",
         "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-1024-9.pt.199",
-        "result_save_path": "./CheckpointDDPM/UNet-Continue-1024-small.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Continue.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 384, 512, 768, 1024],
+        "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
         "T": 1000,
         "num_class": 1000,
-        "kernel_size": 7,
+        "kernel_size": 5,
         "num_layers_diff": -1,
-        "not_use_fc": True,
+        "not_use_fc": False,
         "freeze_extractor": False,
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         "weight_decay": 0.0,
         "epochs": 300,
         "eta_min": 0.0,
-        "batch_size": 256,
+        "batch_size": 64,
         "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,

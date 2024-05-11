@@ -43,15 +43,15 @@ def inference_with_lora(prompt: list, lora_path, model_path="./PixArt-XL-256", d
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:5",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "LoRAModel_path": "./CheckpointOriginLoRA/class000",
         "save_sampled_images_path": "./temp",
-        "prompts": ["A house alongside a tree",
-                    "A large tree on the field",
-                    "A house alongside a tree",
-                    "A large tree on the field"],
+        "prompts": ["A bird landing on a perch by a feeder.",
+                    "A motor bike is shown parked on the road.",
+                    "A bird perched on top of a tree branch.",
+                    "A train traveling down tracks near power poles."],
         "dtype": torch.float32,
         "seed": 43
     }
