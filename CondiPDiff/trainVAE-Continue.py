@@ -15,36 +15,37 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "checkpoint": None,
         "image_data_path": "../../datasets/ContiStyles",
         "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Continue-2048-3.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Continue-1024-9.pt",
         # big model structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
         "d_latent": 1024,
         "num_parameters": 516096,
         "padding": 0,
         "last_length": 2016,
-        "kernel_size": 11,
+        "kernel_size": 9,
         "num_layers": -1,
         "not_use_var": False,
         "use_elu_activator": True,
         # training setting
         "autocast": True,
-        "lr": 0.001,
+        "lr": 0.0002,
         "weight_decay": 0.0,
         "epochs": 200,
         "eta_min": 1e-8,
         "batch_size": 64,
         "num_workers": 8,
         "save_every": 20,
-        "kld_weight": 0.0001,
-        "kld_start_epoch": 10000,
+        "kld_weight": 0.0002,
+        "kld_start_epoch": 0,
         "kld_rise_rate": 0.0,
+        "kld_reset_every": 10000,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -99,6 +100,8 @@ if __name__ == "__main__":
             model.to(device)
         if (e+1) > config["kld_start_epoch"]:
             config["kld_weight"] += config["kld_rise_rate"]
+        if (e+1) % config["kld_reset_every"] == 0:
+            config["kld_weight"] = 0.0
 
     print("Finished Training...")
 
