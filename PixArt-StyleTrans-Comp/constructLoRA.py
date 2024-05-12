@@ -1,7 +1,7 @@
 import os
 import shutil
 
-style_class = 9
+style_class = 3
 param_group = 0
 
 checkpoint_dir = f'./lora_result_{style_class}_{param_group}'

@@ -17,10 +17,10 @@ if __name__ == "__main__":
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
-        "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "path_to_loras": "../PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA",
         "path_to_images": "../../datasets/Styles",
-        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
-        "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
+        "path_to_save": "../PixArt-StyleTrans-Comp-old/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Comp-old/CheckpointStyleDataset/adapter_config.json",
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
         "d_latent": 128,

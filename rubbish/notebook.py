@@ -61,7 +61,7 @@ for key, value in x.items():
 
 
 # print("-----------------------------------------------------------------")
-# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointTrainLoRA/lora_class00_group0_number0/pytorch_lora_weights.safetensors", device="cpu")
+# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA/lora_class00_group0_number0/pytorch_lora_weights.safetensors", device="cpu")
 # for key, value in x.items():
 #     print(value.flatten()[:20])
 #     break

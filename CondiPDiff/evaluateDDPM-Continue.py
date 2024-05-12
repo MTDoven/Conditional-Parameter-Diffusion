@@ -18,8 +18,8 @@ if __name__ == "__main__":
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
-        "UNet_path": "./CheckpointDDPM/UNet-Continue.pt",
-        "VAE_path": "./CheckpointVAE/VAE-Continue.pt",
+        "UNet_path": "./CheckpointDDPM/UNet-Continue-10.pt",
+        "VAE_path": "./CheckpointVAE/VAE-Continue-10.pt",
         "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
         "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles",
         "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",

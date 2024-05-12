@@ -15,36 +15,37 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "checkpoint": None,
-        "image_data_path": "../../datasets/Styles",
+        "image_data_path": "../../datasets/FIDStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-4.pt",
         # big model structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888 + 176 * 2,
-        "padding": 176,
-        "last_length": 255,
+        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
+        "d_latent": 1024,
+        "num_parameters": 516096,
+        "padding": 0,
+        "last_length": 2016,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
         "autocast": True,
-        "lr": 0.002,
+        "lr": 0.0002,
         "weight_decay": 0.0,
-        "epochs": 300,
-        "eta_min": 1e-7,
-        "batch_size": 48,
+        "epochs": 100,
+        "eta_min": 1e-8,
+        "batch_size": 64,
         "num_workers": 8,
-        "save_every": 30,
-        "kld_weight": 0.0,
-        "kld_start_epoch": 10000,
+        "save_every": 20,
+        "kld_weight": 0.0002,
+        "kld_start_epoch": 0,
         "kld_rise_rate": 0.0,
+        "kld_reset_every": 10000,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")

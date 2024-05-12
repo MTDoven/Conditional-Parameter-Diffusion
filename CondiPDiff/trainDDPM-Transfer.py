@@ -19,7 +19,7 @@ if __name__ == "__main__":
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "path_to_images": "../../datasets/Styles",
-        "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "lora_data_path": "../PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA",
         "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer.pt",
         "result_save_path": "./CheckpointDDPM/UNet-Transfer.pt",
         # diffusion structure

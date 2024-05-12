@@ -503,14 +503,14 @@ def main():
             "to_q",
             "to_v",
             "to_out.0",
-            "proj_in",
-            "proj_out",
+            #"proj_in",
+            #"proj_out",
             # "ff.net.0.proj",
             # "ff.net.2",
             # "proj",
             # "linear",
             # "linear_1",
-            "linear_2",
+            #"linear_2",
         ]
     )
 

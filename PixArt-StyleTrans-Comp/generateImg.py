@@ -12,14 +12,14 @@ warnings.filterwarnings("ignore", category=UserWarning)
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:5",
         # path setting
         "image_size": 256,
         "padding": 176,
         "prompts_file": "./CheckpointStyleDataset/prompts.csv",
         "BaseModel_path": "../../datasets/PixArt-XL-256",
-        "LoRAModel_path": "./CheckpointNoneLoRA/class00",
-        "save_sampled_images_path": "../../datasets/Generated/EmptyStyles/style00",
+        "LoRAModel_path": "./CheckpointAverageLoRA/GenAverage/class00",
+        "save_sampled_images_path": "../../datasets/Generated/AverageStyles/style00",
         # generating setting
         "batch_size": 100,
         "total_number": 20000,
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     prompts_all = list(pd.read_csv(config["prompts_file"])['caption'])
 
-    for i in [7]:
+    for i in [0, 2, 4, 7, 8]:
         config["label"] = i
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
 
