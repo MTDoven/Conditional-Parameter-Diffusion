@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "checkpoint": None,
         "image_data_path": "../../datasets/FIDStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-4.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer-04.pt",
         # big model structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
         "d_latent": 1024,

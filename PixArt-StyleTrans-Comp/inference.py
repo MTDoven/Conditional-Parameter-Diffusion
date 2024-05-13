@@ -41,7 +41,7 @@ def inference_with_lora(prompt: list, lora_path, model_path="./PixArt-XL-256", d
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "LoRAModel_path": "./CheckpointOriginLoRA/class00",
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         "dtype": torch.float16,
     }
 
-    for i in range(10):
+    for i in range(4):
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
         images = inference_with_lora(prompt=config["prompts"],
                                      lora_path=config["LoRAModel_path"],

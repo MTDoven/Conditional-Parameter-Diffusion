@@ -12,24 +12,24 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:7",
+        "device": "cuda:5",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
-        "VAE_path": "./CheckpointVAE/VAE-Transfer-old.pt",
-        "path_to_loras": "../PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA",
-        "path_to_images": "../../datasets/Styles",
-        "path_to_save": "../PixArt-StyleTrans-Comp-old/CheckpointGenLoRA",
-        "adapter_config_path": "../PixArt-StyleTrans-Comp-old/CheckpointStyleDataset/adapter_config.json",
+        "VAE_path": "./CheckpointVAE/VAE-Transfer-04.pt",
+        "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "path_to_images": "../../datasets/FIDStyles",
+        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # vae structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888 + 176 * 2,
-        "padding": 176,
-        "last_length": 255,
+        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
+        "d_latent": 1024,
+        "num_parameters": 516096,
+        "padding": 0,
+        "last_length": 2016,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
     }
 

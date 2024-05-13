@@ -18,30 +18,32 @@ if __name__ == "__main__":
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
-        "UNet_path": "./CheckpointDDPM/UNet-Transfer-old.pt",
+        "UNet_path": "./CheckpointDDPM/UNet-Transfer-04.pt",
         "VAE_path": "./CheckpointVAE/VAE-Transfer-old.pt",
-        "path_to_loras": "../PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA",
-        "path_to_images": "../../datasets/Styles",
-        "path_to_save": "../PixArt-StyleTrans-Comp-old/CheckpointAverageLoRA/Gen8",
-        "adapter_config_path": "../PixArt-StyleTrans-Comp-old/CheckpointStyleDataset/adapter_config.json",
+        "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
+        "path_to_images": "../../datasets/FIDStyles",
+        "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
-        "num_channels": [64, 128, 192, 256, 384, 512, 64],
+        "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
         "T": 1000,
-        "num_class": 10,
-        "kernel_size": 3,
+        "num_class": 1000,
+        "kernel_size": 5,
         "num_layers_diff": -1,
+        "not_use_fc": False,
+        "freeze_extractor": False,
         # model structure
-        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 1024, 64],
-        "d_latent": 128,
-        "num_parameters": 521888 + 176 * 2,
-        "padding": 176,
-        "last_length": 255,
+        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
+        "d_latent": 1024,
+        "num_parameters": 516096,
+        "padding": 0,
+        "last_length": 2016,
         "kernel_size_vae": 9,
         "num_layers": -1,
-        "not_use_var": True,
+        "not_use_var": False,
         "use_elu_activator": True,
         # training setting
-        "batch_size": 10,
+        "batch_size": 4,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         # variable parameters
@@ -54,7 +56,9 @@ if __name__ == "__main__":
                 T=config["T"],
                 num_class=config["num_class"],
                 kernel_size=config["kernel_size"],
-                num_layers=config["num_layers_diff"])
+                num_layers=config["num_layers_diff"],
+                not_use_fc=config["not_use_fc"],
+                freeze_extractor=config["freeze_extractor"])
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],
@@ -88,7 +92,7 @@ if __name__ == "__main__":
     vae.eval()
     with torch.no_grad():
         condition = []
-        for i in range(10):
+        for i in range(4):
             for index in range(len(dataset)):
                 image, param, item, prompt = dataset[index]
                 if item == i:
@@ -98,7 +102,7 @@ if __name__ == "__main__":
         condition = torch.stack(condition)
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled * 400.0, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
     for i, param in enumerate(gen_parameters):

@@ -26,10 +26,7 @@
     "to_k",
     "to_q",
     "to_v",
-    "to_out.0",
-    "proj_in",
-    "proj_out",
-    "linear_2"
+    "to_out.0"
   ],
   "task_type": null,
   "use_dora": false,

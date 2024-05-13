@@ -52,16 +52,20 @@ from safetensors.torch import load_file, save_file
 # import torch
 # from safetensors.torch import load_file
 #
-x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Conti/CheckpointOriginLoRA/class500/adapter_model.safetensors", device="cpu")
+x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointOriginLoRA/class03/adapter_model.safetensors", device="cpu")
+new = {}
 for key, value in x.items():
-    # if "lora_B" in key:
-    #     print(value.abs().max())
-    if value.flatten().shape[0] != 1152 * 2:
-        print(key, value.shape)
+    # # if "lora_B" in key:
+    # #     print(value.abs().max())
+    # if value.flatten().shape[0] != 1152 * 2:
+    #     print(key, value.shape)
+    new[key[5:]] = value
+
+save_file(new, "/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp/CheckpointOriginLoRA/class03/adapter_model.safetensors")
 
 
 # print("-----------------------------------------------------------------")
-# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA/lora_class00_group0_number0/pytorch_lora_weights.safetensors", device="cpu")
+# x = load_file("/home/wangkai/cpdiff/condipdiff/PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA/lora_class00_group0_number0/adapter_model.safetensors", device="cpu")
 # for key, value in x.items():
 #     print(value.flatten()[:20])
 #     break

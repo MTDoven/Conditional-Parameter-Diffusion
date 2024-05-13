@@ -20,7 +20,7 @@ if __name__ == "__main__":
         "dataset": Image2SafetensorsDataset,
         "path_to_images": "../../datasets/FIDStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer-04.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer-old.pt",
         "result_save_path": "./CheckpointDDPM/UNet-Transfer-04.pt",
         # diffusion structure
         "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         "autocast": True,
         "lr": 0.0005,
         "weight_decay": 0.0,
-        "epochs": 300,
+        "epochs": 60,
         "eta_min": 0.0,
         "batch_size": 64,
         "num_workers": 16,

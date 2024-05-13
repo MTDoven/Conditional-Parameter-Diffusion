@@ -71,7 +71,7 @@ class Image2SafetensorsDataset(Dataset):
         self.duplicate = duplicate
         self.path_to_images = path_to_images
         root, dirs, _ = next(os.walk(path_to_loras))
-        self.files_path = [os.path.join(root, dir, "pytorch_lora_weights.safetensors")
+        self.files_path = [os.path.join(root, dir, "adapter_model.safetensors")
                            for dir in dirs if "lora" in dir]
         self.length = len(self.files_path)
         self.param_structure = []
