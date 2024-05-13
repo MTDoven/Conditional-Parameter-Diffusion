@@ -20,7 +20,7 @@ if __name__ == "__main__":
         "dataset": Image2SafetensorsDataset,
         "path_to_images": "../../datasets/FIDStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer-old.pt",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Transfer-04.pt",
         "result_save_path": "./CheckpointDDPM/UNet-Transfer-04.pt",
         # diffusion structure
         "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "num_class": 1000,
         "kernel_size": 5,
         "num_layers_diff": -1,
-        "not_use_fc": False,
+        "not_use_fc": True,
         "freeze_extractor": False,
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
@@ -44,9 +44,9 @@ if __name__ == "__main__":
         "autocast": True,
         "lr": 0.0005,
         "weight_decay": 0.0,
-        "epochs": 60,
+        "epochs": 200,
         "eta_min": 0.0,
-        "batch_size": 64,
+        "batch_size": 128,
         "num_workers": 16,
         "beta_1": 0.0001,
         "beta_T": 0.02,
@@ -116,7 +116,6 @@ if __name__ == "__main__":
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])
-                    x_0 = x_0 * 0.01
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])

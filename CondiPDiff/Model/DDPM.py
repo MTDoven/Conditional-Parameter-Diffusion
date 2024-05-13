@@ -244,10 +244,8 @@ class ODUNetTransfer(ODUNetBase):
         self.class_encode = nn.Sequential(
             resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
             nn.LeakyReLU(),
-            nn.Dropout(0.1),
             nn.Linear(1000, d_latent*2),
             nn.LeakyReLU(),
-            nn.Dropout(0.1),
             nn.Linear(d_latent*2, d_latent),
         )
         if kwargs.get("freeze_extractor"):

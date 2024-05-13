@@ -37,12 +37,12 @@ if __name__ == "__main__":
         "autocast": True,
         "lr": 0.0002,
         "weight_decay": 0.0,
-        "epochs": 100,
+        "epochs": 30,
         "eta_min": 1e-8,
         "batch_size": 64,
         "num_workers": 8,
         "save_every": 20,
-        "kld_weight": 0.0002,
+        "kld_weight": 0.00001,
         "kld_start_epoch": 0,
         "kld_rise_rate": 0.0,
         "kld_reset_every": 10000,
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
         scheduler.step()
         if (e+1) % config["save_every"] == 0:
-            torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
+            torch.save(model.cpu().state_dict(), config["result_save_path"])
             model.to(device)
         if (e+1) > config["kld_start_epoch"]:
             config["kld_weight"] += config["kld_rise_rate"]
