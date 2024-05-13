@@ -16,7 +16,7 @@ if __name__ == "__main__":
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
-        "VAE_path": "./CheckpointVAE/VAE-Transfer.pt",
+        "VAE_path": "./CheckpointVAE/VAE-Transfer-old.pt",
         "path_to_loras": "../PixArt-StyleTrans-Comp-old/CheckpointTrainLoRA",
         "path_to_images": "../../datasets/Styles",
         "path_to_save": "../PixArt-StyleTrans-Comp-old/CheckpointGenLoRA",

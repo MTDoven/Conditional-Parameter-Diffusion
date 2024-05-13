@@ -15,14 +15,14 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:1",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "checkpoint": None,
         "image_data_path": "../../datasets/ContiStyle6",
         "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA06",
-        "result_save_path": "./CheckpointVAE/VAE-Continue-600.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Continue-06.pt",
         # big model structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
         "d_latent": 1024,
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         "autocast": True,
         "lr": 0.0002,
         "weight_decay": 0.0,
-        "epochs": 100,
+        "epochs": 200,
         "eta_min": 1e-8,
         "batch_size": 64,
         "num_workers": 8,
