@@ -31,7 +31,8 @@ class GaussianDiffusionTrainer(nn.Module):
         noise = torch.randn_like(x_0)
         x_t = (extract(self.sqrt_alphas_bar, t, x_0.shape) * x_0 +
                extract(self.sqrt_one_minus_alphas_bar, t, x_0.shape) * noise)
-        loss = F.mse_loss(self.model(x_t, condition, t), noise, reduction='none').sum() * 0.001
+        # loss = F.mse_loss(self.model(x_t, condition, t), noise, reduction='none').sum() * 0.001
+        loss = F.mse_loss(self.model(x_t, condition, t), noise, reduction='mean')
         return loss
 
 
@@ -247,6 +248,14 @@ class ODUNetTransfer(ODUNetBase):
             nn.Linear(1000, d_latent*2),
             nn.LeakyReLU(),
             nn.Linear(d_latent*2, d_latent),
+        ) if not kwargs.get("simple_extractor") else nn.Sequential(
+            nn.Conv2d(3, 64, 7, 4, 3),
+            nn.LeakyReLU(),
+            nn.Conv2d(64, d_latent, 5, 2, 2),
+            nn.AdaptiveAvgPool2d(1),
+            nn.LeakyReLU(),
+            nn.Flatten(start_dim=1),
+            nn.Linear(d_latent, d_latent)
         )
         if kwargs.get("freeze_extractor"):
             for name, param in self.class_encode[0].named_parameters():

@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "UNet_path": "./CheckpointDDPM/UNet-Continue-05.pt",
         "VAE_path": "./CheckpointVAE/VAE-Continue-05.pt",
         "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles",
+        "path_to_images": "../../datasets/ContiStyles", #"../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles",
         "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
@@ -32,6 +32,7 @@ if __name__ == "__main__":
         "num_layers_diff": -1,
         "not_use_fc": True,
         "freeze_extractor": False,
+        "simple_extractor": True,
         # model structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
         "d_latent": 1024,
@@ -58,7 +59,8 @@ if __name__ == "__main__":
                 kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],
                 not_use_fc=config["not_use_fc"],
-                freeze_extractor=config["freeze_extractor"])
+                freeze_extractor=config["freeze_extractor"],
+                simple_extractor=config["simple_extractor"])
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],

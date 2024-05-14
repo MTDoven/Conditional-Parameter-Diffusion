@@ -44,7 +44,7 @@ if __name__ == "__main__":
         "device": "cuda:5",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
-        "LoRAModel_path": "./CheckpointOriginLoRA/class00",
+        "LoRAModel_path": "./CheckpointGenLoRA/class00",
         "save_sampled_images_path": "./temp",
         "prompts": ["A baby elephant standing next to it's parents",
                     "a lamp post and a fire hydrant in front of a bench",

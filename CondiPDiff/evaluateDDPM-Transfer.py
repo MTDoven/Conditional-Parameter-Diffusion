@@ -19,7 +19,7 @@ if __name__ == "__main__":
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "UNet_path": "./CheckpointDDPM/UNet-Transfer-04.pt",
-        "VAE_path": "./CheckpointVAE/VAE-Transfer-old.pt",
+        "VAE_path": "./CheckpointVAE/VAE-Transfer-04.pt",
         "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
         "path_to_images": "../../datasets/FIDStyles",
         "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         "num_class": 1000,
         "kernel_size": 5,
         "num_layers_diff": -1,
-        "not_use_fc": False,
+        "not_use_fc": True,
         "freeze_extractor": False,
         # model structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],

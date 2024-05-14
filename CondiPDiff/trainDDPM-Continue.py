@@ -14,14 +14,14 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "path_to_images": "../../datasets/ContiStyles",
-        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA05",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-05.pt",
-        "result_save_path": "./CheckpointDDPM/UNet-Continue-05.pt",
+        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-10.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Continue-10.pt",
         # diffusion structure
         "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
         "T": 1000,
@@ -30,6 +30,7 @@ if __name__ == "__main__":
         "num_layers_diff": -1,
         "not_use_fc": True,
         "freeze_extractor": False,
+        "simple_extractor": True,
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
         "d_latent": 1024,
@@ -65,7 +66,8 @@ if __name__ == "__main__":
                 kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],
                 not_use_fc=config["not_use_fc"],
-                freeze_extractor=config["freeze_extractor"])
+                freeze_extractor=config["freeze_extractor"],
+                simple_extractor=config["simple_extractor"])
     unet = unet.to(device)
     trainer = GaussianDiffusionTrainer(unet,
                                        beta_1=config["beta_1"],
