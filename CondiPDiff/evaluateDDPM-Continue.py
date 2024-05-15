@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:7",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,

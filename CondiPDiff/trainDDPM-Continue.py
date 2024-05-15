@@ -14,7 +14,7 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:4",
+        "device": "cuda:7",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
@@ -42,17 +42,18 @@ if __name__ == "__main__":
         "not_use_var": True,
         "use_elu_activator": True,
         # training setting
+        "duplicate": 100,
         "autocast": True,
         "lr": 0.0005,
-        "weight_decay": 0.0001,
-        "epochs": 300,
+        "weight_decay": 0.1,
+        "epochs": 80,
         "eta_min": 0.0,
-        "batch_size": 128,
-        "num_workers": 16,
+        "batch_size": 256,
+        "num_workers": 32,
         "beta_1": 0.0001,
         "beta_T": 0.02,
         "clip_grad_norm": 1.0,
-        "save_every": 20,
+        "save_every": 10,
     }
 
     wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
@@ -90,18 +91,27 @@ if __name__ == "__main__":
             new_diction[name] = param
     vae.load_state_dict(new_diction)
     vae = vae.to(device)
+
     for name, param in vae.named_parameters():
         param.requires_grad = False
-    optimizer = AdamW(unet.parameters(),
-                      lr=config["lr"],
-                      weight_decay=config["weight_decay"])
+    params_without_weight_decay, params_with_weight_decay = [], []
+    for name, param in unet.named_parameters():
+        if 'class_encode' in name:
+            params_without_weight_decay.append(param)
+        else:  # not class encode
+            params_with_weight_decay.append(param)
+
+    optimizer = AdamW(params=[{'params': params_with_weight_decay, 'weight_decay': config["weight_decay"]},
+                              {'params': params_without_weight_decay}],
+                      lr=config["lr"],)
     scheduler = CosineAnnealingLR(optimizer,
                                   T_max=config["epochs"],
                                   eta_min=config["eta_min"], )
     dataloader = DataLoader(config["dataset"](path_to_loras=config["lora_data_path"],
                                               path_to_images=config["path_to_images"],
                                               image_size=config["image_size"],
-                                              padding=config["padding"]),
+                                              padding=config["padding"],
+                                              duplicate=config["duplicate"]),
                             batch_size=config["batch_size"],
                             num_workers=config["num_workers"],
                             pin_memory=True,

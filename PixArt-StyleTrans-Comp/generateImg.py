@@ -12,14 +12,14 @@ warnings.filterwarnings("ignore", category=UserWarning)
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:6",
         # path setting
         "image_size": 256,
         "padding": 0,
         "prompts_file": "./CheckpointStyleDataset/prompts.csv",
         "BaseModel_path": "../../datasets/PixArt-XL-256",
-        "LoRAModel_path": "./CheckpointGenLoRA/class00",
-        "save_sampled_images_path": "../../datasets/Generated/GenStyles/style00",
+        "LoRAModel_path": "./CheckpointSoupLoRA/class00",
+        "save_sampled_images_path": "../../datasets/Generated/SoupStyles/style00",
         # generating setting
         "batch_size": 100,
         "total_number": 20000,

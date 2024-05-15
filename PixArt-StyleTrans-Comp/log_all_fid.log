@@ -1,0 +1,241 @@
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style0" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseStyles/style00" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Base class00 generated fid: -2.4442670110147446e-12
+Frechet Inception Distance: -2.4442670110147446e-12
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style1" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseStyles/style01" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: -1.6484591469634324e-12
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Base class01 generated fid: -1.6484591469634324e-12
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style2" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseStyles/style02" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: -2.3305801732931286e-12
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Base class02 generated fid: -2.3305801732931286e-12
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style3" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/BaseStyles/style03" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: -3.0127011996228248e-12
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Base class03 generated fid: -3.0127011996228248e-12
+========================================================================
+Base average result: -2.3590018827235326e-12
+
+
+
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style0" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/EmptyStyles/style00" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Empty class00 generated fid: 102.95703863211918
+Frechet Inception Distance: 102.95703863211918
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style1" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/EmptyStyles/style01" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 96.18179427057504
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Empty class01 generated fid: 96.18179427057504
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style2" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/EmptyStyles/style02" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 171.82592991983347
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Empty class02 generated fid: 171.82592991983347
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style3" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/EmptyStyles/style03" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 132.7613980100188
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Empty class03 generated fid: 132.7613980100188
+========================================================================
+Empty average result: 125.93154020813662
+
+
+
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style0" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/GenStyles/style00" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 28.025894919930977
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Gen class00 generated fid: 28.025894919930977
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style1" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/GenStyles/style01" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 26.979396691756108
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Gen class01 generated fid: 26.979396691756108
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style2" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/GenStyles/style02" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 35.977888204452995
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Gen class02 generated fid: 35.977888204452995
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style3" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/GenStyles/style03" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 40.59168239625245
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Gen class03 generated fid: 40.59168239625245
+========================================================================
+Gen average result: 32.89371555309813
+
+
+
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style0" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/OriginStyles/style00" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Origin class00 generated fid: 27.922752623743918
+Frechet Inception Distance: 27.922752623743918
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style1" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/OriginStyles/style01" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 27.10667601252794
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Origin class01 generated fid: 27.10667601252794
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style2" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/OriginStyles/style02" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 36.21993022499396
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Origin class02 generated fid: 36.21993022499396
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style3" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/OriginStyles/style03" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Origin class03 generated fid: 40.80188686368001
+========================================================================
+Origin average result: 33.01281143123646
+
+
+
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style0" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/SoupStyles/style00" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 28.08573612722313
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Soup class00 generated fid: 28.08573612722313
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style1" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/SoupStyles/style01" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Soup class01 generated fid: 27.137924804653608
+Frechet Inception Distance: 27.137924804653608
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style2" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/SoupStyles/style02" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 36.00922617816639
+Creating feature extractor "inception-v3-compat" with features ['2048']
+Soup class02 generated fid: 36.00922617816639
+Extracting statistics from input 1
+Looking for samples non-recursivelty in "../../datasets/FIDStyles/style3" with extensions png,jpg,jpeg
+Found 19858 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Extracting statistics from input 2
+Looking for samples non-recursivelty in "../../datasets/Generated/SoupStyles/style03" with extensions png,jpg,jpeg
+Found 19857 samples, some are lossy-compressed - this may affect metrics
+Processing samples
+Frechet Inception Distance: 40.193567912587184
+Soup class03 generated fid: 40.193567912587184
+========================================================================
+Soup average result: 32.85661375565758
