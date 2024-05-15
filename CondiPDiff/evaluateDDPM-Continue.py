@@ -14,34 +14,34 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "UNet_path": "./CheckpointDDPM/UNet-Continue-05.pt",
         "VAE_path": "./CheckpointVAE/VAE-Continue-05.pt",
         "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "path_to_images": "../../datasets/ContiStyles", #"../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles",
+        "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles", #"../../datasets/ContiStyles", #
         "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
-        "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
+        "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,
         "num_class": 1000,
-        "kernel_size": 5,
+        "kernel_size": 3,
         "num_layers_diff": -1,
-        "not_use_fc": True,
+        "not_use_fc": False,
         "freeze_extractor": False,
         "simple_extractor": True,
         # model structure
-        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
-        "d_latent": 1024,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
+        "d_latent": 256,
         "num_parameters": 516096,
         "padding": 0,
-        "last_length": 2016,
+        "last_length": 504,
         "kernel_size_vae": 9,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
         "batch_size": 10,
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     vae.eval()
     with torch.no_grad():
         condition = []
-        for i in range(0, 1000, 100):
+        for i in range(50, 1000, 100):
             for index in range(len(dataset)):
                 image, param, item, prompt = dataset[index]
                 if item == i:
@@ -104,10 +104,10 @@ if __name__ == "__main__":
         condition = torch.stack(condition)
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled * 100.0, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
-    for i, param in zip(range(0, 1000, 100), gen_parameters):
+    for i, param in zip(range(50, 1000, 100), gen_parameters):
         dataset.save_param_dict(
             save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(3)}"),
             parameters=param,

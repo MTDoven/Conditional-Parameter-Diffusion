@@ -25,22 +25,23 @@ if __name__ == "__main__":
         "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
-        "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
+        "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,
         "num_class": 1000,
-        "kernel_size": 5,
+        "kernel_size": 3,
         "num_layers_diff": -1,
-        "not_use_fc": True,
+        "not_use_fc": False,
         "freeze_extractor": False,
+        "simple_extractor": True,
         # model structure
-        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
-        "d_latent": 1024,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
+        "d_latent": 256,
         "num_parameters": 516096,
         "padding": 0,
-        "last_length": 2016,
+        "last_length": 504,
         "kernel_size_vae": 9,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
         "batch_size": 4,
@@ -58,7 +59,8 @@ if __name__ == "__main__":
                 kernel_size=config["kernel_size"],
                 num_layers=config["num_layers_diff"],
                 not_use_fc=config["not_use_fc"],
-                freeze_extractor=config["freeze_extractor"])
+                freeze_extractor=config["freeze_extractor"],
+                simple_extractor=config["simple_extractor"])
     unet.load_state_dict(torch.load(config["UNet_path"]))
     unet = unet.to(device)
     vae = VAE(d_model=config["d_model"],
@@ -102,7 +104,7 @@ if __name__ == "__main__":
         condition = torch.stack(condition)
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
-        gen_parameters = vae.decode(sampled, num_parameters=config["num_parameters"])
+        gen_parameters = vae.decode(sampled * 100.0, num_parameters=config["num_parameters"])
         gen_parameters = gen_parameters
 
     for i, param in enumerate(gen_parameters):

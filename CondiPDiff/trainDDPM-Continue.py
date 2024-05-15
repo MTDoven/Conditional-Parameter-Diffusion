@@ -19,33 +19,33 @@ if __name__ == "__main__":
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "path_to_images": "../../datasets/ContiStyles",
-        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-10.pt",
-        "result_save_path": "./CheckpointDDPM/UNet-Continue-10.pt",
+        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA05",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-05.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Continue-05-1.pt",
         # diffusion structure
-        "num_channels": [64, 128, 256, 384, 512, 768, 1024, 24],
+        "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,
         "num_class": 1000,
-        "kernel_size": 5,
+        "kernel_size": 3,
         "num_layers_diff": -1,
-        "not_use_fc": True,
+        "not_use_fc": False,
         "freeze_extractor": False,
         "simple_extractor": True,
         # vae structure
-        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
-        "d_latent": 1024,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
+        "d_latent": 256,
         "num_parameters": 516096,
         "padding": 0,
-        "last_length": 2016,
+        "last_length": 504,
         "kernel_size_vae": 9,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
         "autocast": True,
         "lr": 0.0005,
-        "weight_decay": 0.02,
-        "epochs": 100,
+        "weight_decay": 0.0001,
+        "epochs": 300,
         "eta_min": 0.0,
         "batch_size": 128,
         "num_workers": 16,
@@ -117,6 +117,7 @@ if __name__ == "__main__":
                 with torch.no_grad():
                     mu, log_var = vae.encode(param.to(device))
                     x_0 = vae.reparameterize(mu, log_var, not_use_var=config["not_use_var"])
+                    x_0 = x_0 * 0.01
                 loss = trainer(x_0, item.to(device))
             scaler.scale(loss).backward()
             torch.nn.utils.clip_grad_norm_(unet.parameters(), config["clip_grad_norm"])

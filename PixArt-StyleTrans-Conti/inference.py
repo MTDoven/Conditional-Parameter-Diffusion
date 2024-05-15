@@ -43,7 +43,7 @@ def inference_with_lora(prompt: list, lora_path, model_path="./PixArt-XL-256", d
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # path setting
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "LoRAModel_path": "./CheckpointGenLoRA/class000",
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         torch.backends.cudnn.deterministic = True
     setup_seed(config["seed"])
 
-    for i in range(0, 1000, 100):
+    for i in range(50, 1000, 100):
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(3)}"
         images = inference_with_lora(prompt=config["prompts"],
                                      lora_path=config["LoRAModel_path"],

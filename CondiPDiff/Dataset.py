@@ -108,6 +108,12 @@ class Image2SafetensorsDataset(Dataset):
         this_param = []
         for name, shape in self.param_structure:
             param = diction[name]
+            if "lora_A" in name:
+                param = param * 0.2
+            elif "lora_B" in name:
+                param = param * 200.0
+            else:  # error
+                raise ValueError(f"lora not in {name}")
             assert param.shape == shape
             this_param.append(param.flatten())
         this_param = torch.cat(this_param, dim=0)
@@ -123,6 +129,12 @@ class Image2SafetensorsDataset(Dataset):
         for name, shape in self.param_structure:
             length_to_cut = reduce(lambda x, y: x * y, shape)
             param = parameters[:length_to_cut]
+            if "lora_A" in name:
+                param = param * 5.0
+            elif "lora_B" in name:
+                param = param * 0.005
+            else:  # error
+                raise ValueError(f"lora not in {name}")
             if "unet." == name[:5]:
                 name = name[5:]
             param_dict_to_save[name] = param.view(shape)

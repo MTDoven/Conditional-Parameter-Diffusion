@@ -12,24 +12,24 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:4",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "VAE_path": "./CheckpointVAE/VAE-Continue-05.pt",
         "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "path_to_images": "../../datasets/ContiStyles",
+        "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles",
         "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
         # vae structure
-        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
-        "d_latent": 1024,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
+        "d_latent": 256,
         "num_parameters": 516096,
         "padding": 0,
-        "last_length": 2016,
+        "last_length": 504,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
     }
 

@@ -15,34 +15,34 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:1",
+        "device": "cuda:6",
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
         "checkpoint": None,
         "image_data_path": "../../datasets/ContiStyles",
-        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA05",
+        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
         "result_save_path": "./CheckpointVAE/VAE-Continue-05.pt",
         # big model structure
-        "d_model": [16, 32, 64, 128, 256, 512, 512, 32],
-        "d_latent": 1024,
+        "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
+        "d_latent": 256,
         "num_parameters": 516096,
         "padding": 0,
-        "last_length": 2016,
+        "last_length": 504,
         "kernel_size": 9,
         "num_layers": -1,
-        "not_use_var": False,
+        "not_use_var": True,
         "use_elu_activator": True,
         # training setting
         "autocast": True,
         "lr": 0.0002,
         "weight_decay": 0.0,
-        "epochs": 200,
+        "epochs": 60,
         "eta_min": 1e-8,
         "batch_size": 64,
         "num_workers": 8,
-        "save_every": 20,
-        "kld_weight": 0.0002,
+        "save_every": 10,
+        "kld_weight": 0.0,
         "kld_start_epoch": 0,
         "kld_rise_rate": 0.0,
         "kld_reset_every": 10000,
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         for *condition, parameters in dataloader:
             optimizer.zero_grad()
             parameters = parameters.to(device)
-            with autocast(enabled= e<config["epochs"]*0.75 and config["autocast"], dtype=torch.bfloat16):
+            with autocast(enabled= e<config["epochs"]*0.9 and config["autocast"], dtype=torch.bfloat16):
                 output = model(parameters, not_use_var=config["not_use_var"])
                 losses = model.loss_function(*output,
                                              kld_weight=config["kld_weight"],
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
         scheduler.step()
         if (e+1) % config["save_every"] == 0:
-            torch.save(model.cpu().state_dict(), config["result_save_path"]+f".{e}")
+            torch.save(model.cpu().state_dict(), config["result_save_path"])
             model.to(device)
         if (e+1) > config["kld_start_epoch"]:
             config["kld_weight"] += config["kld_rise_rate"]
