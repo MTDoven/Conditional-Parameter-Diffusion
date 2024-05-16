@@ -3,6 +3,7 @@ from peft import PeftModel
 import random
 import numpy as np
 import torch
+import pandas as pd
 
 
 pipe = None
@@ -48,12 +49,9 @@ if __name__ == "__main__":
         "BaseModel_path": "../../datasets/PixArt-XL-256",
         "LoRAModel_path": "./CheckpointGenLoRA/class000",
         "save_sampled_images_path": "./temp",
-        "prompts": ["A bird landing on a perch by a feeder.",
-                    "A motor bike is shown parked on the road.",
-                    "A bird perched on top of a tree branch.",
-                    "A train traveling down tracks near power poles."],
-        "dtype": torch.float32,
-        "seed": 43
+        "prompts": list(pd.read_csv("./CheckpointStyleDataset/prompts.csv")['caption'])[0: 100],
+        "dtype": torch.float16,
+        "seed": 42
     }
 
     def setup_seed(seed):

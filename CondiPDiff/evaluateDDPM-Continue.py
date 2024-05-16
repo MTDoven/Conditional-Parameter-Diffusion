@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "UNet_path": "./CheckpointDDPM/UNet-Continue-05.pt",
         "VAE_path": "./CheckpointVAE/VAE-Continue-05.pt",
         "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/evaluateStyles", #"../../datasets/ContiStyles", #
+        "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/ContiStyles",
         "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure

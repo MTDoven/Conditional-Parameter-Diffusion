@@ -14,14 +14,14 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda:7",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "UNet_path": "./CheckpointDDPM/UNet-Transfer-04.pt",
         "VAE_path": "./CheckpointVAE/VAE-Transfer-04.pt",
         "path_to_loras": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "path_to_images": "../../datasets/FIDStyles",
+        "path_to_images": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/evaluateStyles",
         "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
