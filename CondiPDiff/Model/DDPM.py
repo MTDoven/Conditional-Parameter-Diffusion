@@ -1,10 +1,11 @@
-from tqdm.auto import tqdm
-import math
 import torch
 from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
 from torchvision.models import resnet18, ResNet18_Weights
+
+from tqdm.auto import tqdm
+import math
 
 
 def extract(v, t, x_shape):

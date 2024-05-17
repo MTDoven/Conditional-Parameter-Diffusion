@@ -1,14 +1,9 @@
 from Model.DDPM import ODUNetTransfer as UNet
-from Model.DDPM import GaussianDiffusionTrainer, GaussianDiffusionSampler
+from Model.DDPM import GaussianDiffusionSampler
 from Model.VAE import OneDimVAE as VAE
 from Dataset import Image2SafetensorsDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.optim import AdamW
 import torch
-from tqdm.auto import tqdm
 import os.path
-import wandb
 
 
 if __name__ == "__main__":
@@ -24,7 +19,7 @@ if __name__ == "__main__":
         "path_to_images": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/evaluateStyles",
         "path_to_save": "../PixArt-StyleTrans-Comp/CheckpointGenLoRA",
         "adapter_config_path": "../PixArt-StyleTrans-Comp/CheckpointStyleDataset/adapter_config.json",
-        # ddpm structure
+        # diffusion structure
         "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,
         "num_class": 1000,
@@ -33,7 +28,7 @@ if __name__ == "__main__":
         "not_use_fc": False,
         "freeze_extractor": False,
         "simple_extractor": True,
-        # model structure
+        # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
         "d_latent": 256,
         "num_parameters": 516096,
@@ -47,8 +42,6 @@ if __name__ == "__main__":
         "batch_size": 4,
         "beta_1": 0.0001,
         "beta_T": 0.02,
-        # variable parameters
-        "condition": 0
     }
 
     device = config["device"]

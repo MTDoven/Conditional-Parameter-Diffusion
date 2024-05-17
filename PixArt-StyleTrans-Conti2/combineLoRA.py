@@ -3,11 +3,16 @@ import shutil
 import torch
 import os
 
+
 def transfer_weight(w1):
+    # Combining loras is not exactly linear.
+    # This function is used to fine-tune the degree of overlay.
+    # The number in this function are adjusted manually.
     w2 = 1 - w1
     w1 = (-0.88 * w1 * w1 + 2.5 * w1) * 2.07 / 1.65
     w2 = (-0.88 * w2 * w2 + 2.5 * w2) * 1.97 / 1.65
     return w1 ** 0.5, w2 ** 0.5
+
 
 def combine_and_save(lora1_path, lora2_path, out_path, weights: tuple[float, float]):
     lora1_weight, lora2_weight = weights
@@ -30,14 +35,15 @@ def combine_and_save(lora1_path, lora2_path, out_path, weights: tuple[float, flo
         return rank_2
 
 
-for i in range(1000):
-    w1 = i / (1000 - 1)
-    save_path = f"./CheckpointOriginLoRA/class{str(i).zfill(3)}"
-    if not os.path.exists(save_path):
-        os.makedirs(save_path, exist_ok=False)
-    combine_and_save(lora1_path="./CheckpointTrainLoRA/lora_class02_group0_number4/pytorch_lora_weights.safetensors",
-                     lora2_path="./CheckpointTrainLoRA/lora_class03_group0_number4/pytorch_lora_weights.safetensors",
-                     out_path=os.path.join(save_path, "adapter_model.safetensors"),
-                     weights=transfer_weight(w1=w1), )
-    shutil.copyfile("./CheckpointStyleDataset/adapter_config.json",
-                    os.path.join(save_path, "adapter_config.json"))
+if __name__ == "__main__":
+    for i in range(1000):
+        w1 = i / (1000 - 1)
+        save_path = f"./CheckpointOriginLoRA/class{str(i).zfill(3)}"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path, exist_ok=False)
+        combine_and_save(lora1_path="./CheckpointTrainLoRA/lora_class02_group0_number4/pytorch_lora_weights.safetensors",
+                         lora2_path="./CheckpointTrainLoRA/lora_class03_group0_number4/pytorch_lora_weights.safetensors",
+                         out_path=os.path.join(save_path, "adapter_model.safetensors"),
+                         weights=transfer_weight(w1=w1), )
+        shutil.copyfile("./CheckpointStyleDataset/adapter_config.json",
+                        os.path.join(save_path, "adapter_config.json"))

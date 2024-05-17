@@ -1,12 +1,7 @@
 from Model.VAE import OneDimVAE as VAE
 from Dataset import Image2SafetensorsDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.optim import AdamW
-from tqdm.auto import tqdm
 import os.path
 import torch
-import wandb
 
 
 if __name__ == "__main__":
@@ -56,26 +51,32 @@ if __name__ == "__main__":
 
     # evaluate
     model.eval()
-    with torch.no_grad():
-        for i in range(4):
-            for index in range(len(dataset)):
-                image, param, item, prompt = dataset[index]
-                if item == i:
-                    print("\rIndex:", item)
-                    break
+    for i in range(4):
+        # load data
+        for index in range(len(dataset)):
+            image, param, item, prompt = dataset[index]
+            if item == i:
+                print("\rIndex:", item)
+                break
+
+        # inference
+        with torch.no_grad():
             gen_parameter = model.generate(
                 x=param[None, :].to(device),
                 not_use_var=config["not_use_var"],)
             recons = gen_parameter.detach().cpu()[0]
             loss = model.loss_function(recons[None], param[None], None, None, not_use_var=True)
-            print("loss:", loss["MSELoss"])
-            print("param:", param.flatten()[2000:2020])
-            print("recons:", recons.flatten()[2000:2020])
-            print()
-            dataset.save_param_dict(
-                save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}"),
-                parameters=recons,
-                adapter_config_path=config["adapter_config_path"],)
+
+        # save
+        print("loss:", loss["MSELoss"])
+        print("param:", param.flatten()[2000:2020])
+        print("recons:", recons.flatten()[2000:2020])
+        print()
+        dataset.save_param_dict(
+            save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}"),
+            parameters=recons,
+            adapter_config_path=config["adapter_config_path"],)
+
     print(f"\nGenerated parameters saved to {config['path_to_save']}")
 
 

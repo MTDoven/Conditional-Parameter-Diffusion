@@ -1,14 +1,9 @@
 from Model.DDPM import ODUNetTransfer as UNet
-from Model.DDPM import GaussianDiffusionTrainer, GaussianDiffusionSampler
+from Model.DDPM import GaussianDiffusionSampler
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ContiImage2SafetensorsDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.optim import AdamW
 import torch
-from tqdm.auto import tqdm
 import os.path
-import wandb
 
 
 if __name__ == "__main__":
@@ -18,12 +13,12 @@ if __name__ == "__main__":
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
-        "UNet_path": "./CheckpointDDPM/UNet-Continue-05.pt",
-        "VAE_path": "./CheckpointVAE/VAE-Continue-05.pt",
-        "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
-        "path_to_images": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/ContiStyles",
-        "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
-        "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
+        "UNet_path": "./CheckpointDDPM/UNet-Continue-05-02.pt",
+        "VAE_path": "./CheckpointVAE/VAE-Continue-05-02.pt",
+        "path_to_loras": "../PixArt-StyleTrans-Conti2/CheckpointOriginLoRA",
+        "path_to_images": "../PixArt-StyleTrans-Conti2/CheckpointStyleDataset/ContiStyle2",
+        "path_to_save": "../PixArt-StyleTrans-Conti2/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Conti2/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
         "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,
@@ -47,8 +42,6 @@ if __name__ == "__main__":
         "batch_size": 10,
         "beta_1": 0.0001,
         "beta_T": 0.02,
-        # variable parameters
-        "condition": 0
     }
 
     device = config["device"]
@@ -96,7 +89,7 @@ if __name__ == "__main__":
         condition = []
         for i in range(50, 1000, 100):
             for index in range(len(dataset)):
-                image, param, item, prompt = dataset[index]
+                image, param, item, prompt = dataset[index+i]
                 if item == i:
                     condition.append(image)
                     print("\r", item, end="")
@@ -105,7 +98,7 @@ if __name__ == "__main__":
         noise = torch.randn(size=(config["batch_size"], config["d_latent"]), device=device)
         sampled = sampler(noise, condition.to(device))
         gen_parameters = vae.decode(sampled * 100.0, num_parameters=config["num_parameters"])
-        gen_parameters = gen_parameters
+        gen_parameters = gen_parameters# * 0.95
 
     for i, param in zip(range(50, 1000, 100), gen_parameters):
         dataset.save_param_dict(

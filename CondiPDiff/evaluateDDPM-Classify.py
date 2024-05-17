@@ -1,14 +1,9 @@
 from Model.DDPM import ODUNetClassify as UNet
-from Model.DDPM import GaussianDiffusionTrainer, GaussianDiffusionSampler
+from Model.DDPM import GaussianDiffusionSampler
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.optim import AdamW
 import torch
-from tqdm.auto import tqdm
 import os.path
-import wandb
 
 
 if __name__ == "__main__":
@@ -21,13 +16,13 @@ if __name__ == "__main__":
         "VAE_path": "./CheckpointVAE/VAE-Classify.pt",
         "path_to_loras": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
         "path_to_save": "../DDPM-Classify-CIFAR10/CheckpointGenLoRA",
-        # ddpm structure
+        # diffusion structure
         "num_channels": [64, 128, 192, 256, 384, 512, 64],
         "T": 1000,
         "num_class": 10,
         "kernel_size": 3,
         "num_layers_diff": -1,
-        # model structure
+        # vae structure
         "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 64],
         "d_latent": 64,
         "kernel_size_vae": 7,
@@ -40,8 +35,6 @@ if __name__ == "__main__":
         "batch_size": 10,
         "beta_1": 0.0001,
         "beta_T": 0.02,
-        # variable parameters
-        "condition": 0
     }
 
     device = config["device"]

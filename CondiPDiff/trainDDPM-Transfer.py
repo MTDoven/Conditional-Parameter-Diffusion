@@ -2,11 +2,13 @@ from Model.DDPM import ODUNetTransfer as UNet
 from Model.DDPM import GaussianDiffusionTrainer
 from Model.VAE import OneDimVAE as VAE
 from Dataset import Image2SafetensorsDataset
+
 from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
-from torch.cuda.amp import autocast
 import torch
+
 from tqdm.auto import tqdm
 import wandb
 
@@ -55,7 +57,7 @@ if __name__ == "__main__":
         "save_every": 20,
     }
 
-    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
+    wandb.login(key="put your api key here")
     wandb.init(project="OneDimDDPM-Final", config=config)
 
     device = config["device"]

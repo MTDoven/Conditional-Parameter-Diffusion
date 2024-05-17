@@ -1,10 +1,9 @@
-import torch
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pickle
+import os
 
 
 def visualize_data(tensor_data, labels, pca=True, tsne=True, save_path=None):

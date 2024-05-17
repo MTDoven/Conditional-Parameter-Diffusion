@@ -1,20 +1,14 @@
-import shutil
-from functools import reduce
+import torch
 from torch.utils.data import Dataset
-from tqdm.auto import tqdm
-import random
-import torch
-import os
-import re
-import torch
 from safetensors.torch import load_file, save_file
 from torchvision import transforms
+
+from functools import reduce
+from PIL import UnidentifiedImageError
 from PIL import Image
-import math
-from torch.nn.utils.rnn import pad_sequence
-from torch.nn import functional as F
-import PIL
 import shutil
+import random
+import os
 
 
 class Image2SafetensorsDataset(Dataset):
@@ -53,7 +47,7 @@ class Image2SafetensorsDataset(Dataset):
         image_name = random.choice(next(os.walk(os.path.join(self.path_to_images, dir)))[-1])
         try:
             image = Image.open(os.path.join(self.path_to_images, dir, image_name)).convert("RGB")
-        except PIL.UnidentifiedImageError:
+        except UnidentifiedImageError:
             return self[random.randint(0, self.length - 1)]
         image = self.transfer(image)
         # load param

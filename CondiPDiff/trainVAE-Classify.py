@@ -1,13 +1,13 @@
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset
+
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
-from torch.nn import functional as F
-from torch.optim import AdamW, SGD
-from tqdm.auto import tqdm
 from torch.cuda.amp import autocast as autocast
-import os.path
+from torch.optim import AdamW
 import torch
+
+from tqdm.auto import tqdm
 import wandb
 
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
         "dataset": ClassIndex2ParamDataset,
         "lora_data_path": "../DDPM-Classify-CIFAR10/CheckpointTrainLoRA",
         "result_save_path": "./CheckpointVAE/VAE-Classify-1.pt",
-        # small model structure
+        # vae structure
         "d_model": [32, 64, 96, 128, 192, 256, 384, 512, 64],
         "d_latent": 64,
         "kernel_size": 7,
@@ -42,8 +42,8 @@ if __name__ == "__main__":
         "kld_rise_rate": 0.0,
     }
 
-    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(config=config, project="VanillaVAE-Final")
+    wandb.login(key="put your wandb api key")
+    wandb.init(config=config, project="VanillaVAE")
 
     device = config["device"]
     model = VAE(d_model=config["d_model"],

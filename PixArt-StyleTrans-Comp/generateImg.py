@@ -1,19 +1,15 @@
-import os
+from inference import inference_with_lora
 import torch
-import random
-from inference import inference_with_lora, inference
-from Dataset import Image2SafetensorsDataset
-from torchvision import transforms
+
 import pandas as pd
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
+import os
 
 
 if __name__ == "__main__":
     config = {
         # device setting
         "device": "cuda:6",
-        # path setting
+        # path and datasets setting
         "image_size": 256,
         "padding": 0,
         "prompts_file": "./CheckpointStyleDataset/prompts.csv",
@@ -24,32 +20,25 @@ if __name__ == "__main__":
         "batch_size": 100,
         "total_number": 20000,
         "dtype": torch.float16,
-        # variable setting
-        "label": 0,
     }
 
+    # load dataset
     prompts_all = list(pd.read_csv(config["prompts_file"])['caption'])
-
     for i in [0, 1, 2, 3]:
-        config["label"] = i
         config["LoRAModel_path"] = config["LoRAModel_path"].rsplit("/", 1)[0] + f"/class{str(i).zfill(2)}"
-
         for k in range(0, config["total_number"], config["batch_size"]):
             prompts = prompts_all[k: k+config["batch_size"]]
+            # we need to generate a lot to calculate FID.
             print("\ngenerating: ", prompts)
 
-            if "None" not in config["LoRAModel_path"]:
-                images = inference_with_lora(prompt=prompts,
-                                             lora_path=config["LoRAModel_path"],
-                                             model_path=config["BaseModel_path"],
-                                             dtype=config["dtype"],
-                                             device=config["device"])
-            else:  # "None" in config["LoRAModel_path"]
-                images = inference(prompt=prompts,
-                                   model_path=config["BaseModel_path"],
-                                   dtype=config["dtype"],
-                                   device=config["device"])
+            # inference
+            images = inference_with_lora(prompt=prompts,
+                                         lora_path=config["LoRAModel_path"],
+                                         model_path=config["BaseModel_path"],
+                                         dtype=config["dtype"],
+                                         device=config["device"])
 
+            # save
             save_folder = os.path.join(config["save_sampled_images_path"][:-2] + str(i).zfill(2))
             for j, (image, prompt) in enumerate(zip(images, prompts)):
                 if not os.path.exists(save_folder):

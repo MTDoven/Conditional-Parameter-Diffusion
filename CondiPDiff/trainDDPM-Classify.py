@@ -2,12 +2,14 @@ from Model.DDPM import ODUNetClassify as UNet
 from Model.DDPM import GaussianDiffusionTrainer
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset
+
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
+from torch.cuda.amp import autocast
 from torch.optim import AdamW
 import torch
+
 from tqdm.auto import tqdm
-from torch.cuda.amp import autocast
 import wandb
 
 
@@ -50,8 +52,8 @@ if __name__ == "__main__":
         "save_every": 100,
     }
 
-    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(project="OneDimDDPM-Final", config=config)
+    wandb.login(key="put your wandb api key")
+    wandb.init(project="OneDimDDPM", config=config)
 
     device = config["device"]
     unet = UNet(d_latent=config["d_latent"],

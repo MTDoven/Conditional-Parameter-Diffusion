@@ -1,12 +1,7 @@
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ClassIndex2ParamDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.optim import AdamW
-from tqdm.auto import tqdm
 import os.path
 import torch
-import wandb
 
 
 if __name__ == "__main__":
@@ -42,22 +37,26 @@ if __name__ == "__main__":
 
     # evaluate
     model.eval()
-    with torch.no_grad():
-        for i in range(10):
-            for index in range(len(dataset)):
-                item, param = dataset[index]
-                if item == i:
-                    break
-            print("\r", item, end="")
+    for i in range(10):
+        # load data
+        for index in range(len(dataset)):
+            item, param = dataset[index]
+            if item == i:
+                break
+        print("\r", item, end="")
+
+        # inference
+        with torch.no_grad():
             gen_parameter = model.generate(
                 x=param[None, :].to(device),
                 num_parameters=config["num_parameters"],
                 not_use_var=config["not_use_var"], )
             param = gen_parameter.detach().cpu()[0]
 
-            dataset.save_param_dict(
-                save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}.pt"),
-                parameters=param,)
+        # save
+        dataset.save_param_dict(
+            save_path=os.path.join(config["path_to_save"], f"class{str(i).zfill(2)}.pt"),
+            parameters=param,)
     print(f"Generated parameters saved to {config['path_to_save']}")
 
 

@@ -105,7 +105,7 @@ class OneDimVAE(BaseVAE):
 
     def encode(self, input, **kwargs):
         #print(input.shape)
-        # input.shape == [batch_size, num_parameters]
+        # assert input.shape == [batch_size, num_parameters]
         input = input[:, None, :]
         result = self.encoder(input)
         #print(result.shape)
@@ -121,7 +121,6 @@ class OneDimVAE(BaseVAE):
         result = result.view(-1, self.d_model[-1], self.last_length)
         result = self.decoder(result)
         result = self.final_layer(result)
-        assert self.num_parameters == result.shape[-1], \
-            f"{self.num_parameters}, {result.shape}"
+        assert self.num_parameters == result.shape[-1], f"{self.num_parameters}, {result.shape}"
         assert result.shape[1] == 1, f"{result.shape}"
         return result[:, 0, :]

@@ -1,15 +1,14 @@
 from Model.VAE import OneDimVAE as VAE
 from Dataset import Image2SafetensorsDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.nn import functional as F
-from torch.optim import AdamW, SGD, Adam
-from tqdm.auto import tqdm
-from torch.cuda.amp import autocast as autocast
-import os.path
-import torch
-import wandb
 
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.cuda.amp import autocast as autocast
+from torch.utils.data import DataLoader
+from torch.optim import Adam
+import torch
+
+from tqdm.auto import tqdm
+import wandb
 
 
 if __name__ == "__main__":
@@ -23,7 +22,7 @@ if __name__ == "__main__":
         "image_data_path": "../../datasets/FIDStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
         "result_save_path": "./CheckpointVAE/VAE-Transfer-04.pt",
-        # big model structure
+        # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
         "d_latent": 256,
         "num_parameters": 516096,
@@ -48,7 +47,7 @@ if __name__ == "__main__":
         "kld_reset_every": 10000,
     }
 
-    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
+    wandb.login(key="put your api key here")
     wandb.init(config=config, project="VanillaVAE-Final")
 
     device = config["device"]
@@ -64,8 +63,8 @@ if __name__ == "__main__":
     model = model.to(device)
 
     optimizer = Adam(model.parameters(),
-                      lr=config["lr"],
-                      weight_decay=config["weight_decay"],)
+                     lr=config["lr"],
+                     weight_decay=config["weight_decay"],)
     scheduler = CosineAnnealingLR(optimizer,
                                   T_max=config["epochs"],
                                   eta_min=config["eta_min"],)

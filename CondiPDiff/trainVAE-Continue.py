@@ -1,15 +1,12 @@
 from Model.VAE import OneDimVAE as VAE
 from Dataset import ContiImage2SafetensorsDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader
-from torch.nn import functional as F
-from torch.optim import AdamW, SGD, Adam
-from tqdm.auto import tqdm
 from torch.cuda.amp import autocast as autocast
-import os.path
+from torch.utils.data import DataLoader
+from torch.optim import Adam
+from tqdm.auto import tqdm
 import torch
 import wandb
-
 
 
 if __name__ == "__main__":
@@ -23,7 +20,7 @@ if __name__ == "__main__":
         "image_data_path": "../../datasets/ContiStyle2",
         "lora_data_path": "../PixArt-StyleTrans-Conti2/CheckpointOriginLoRA05",
         "result_save_path": "./CheckpointVAE/VAE-Continue-05-02.pt",
-        # big model structure
+        # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
         "d_latent": 256,
         "num_parameters": 516096,
@@ -48,8 +45,8 @@ if __name__ == "__main__":
         "kld_reset_every": 10000,
     }
 
-    wandb.login(key="b8a4b0c7373c8bba8f3d13a2298cd95bf3165260")
-    wandb.init(config=config, project="VanillaVAE-Final")
+    wandb.login(key="put your api key here")
+    wandb.init(config=config, project="VanillaVAE")
 
     device = config["device"]
     model = VAE(d_model=config["d_model"],

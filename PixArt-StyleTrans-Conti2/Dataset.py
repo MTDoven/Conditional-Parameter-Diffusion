@@ -1,31 +1,24 @@
-import shutil
-from functools import reduce
+import torch
 from torch.utils.data import Dataset
-from tqdm.auto import tqdm
-import random
-import torch
-import os
-import re
-import torch
 from safetensors.torch import load_file, save_file
 from torchvision import transforms
+
+from functools import reduce
+from PIL import UnidentifiedImageError
 from PIL import Image
-import math
-from torch.nn.utils.rnn import pad_sequence
-from torch.nn import functional as F
-import PIL
 import shutil
+import random
+import os
 
 
 class Image2SafetensorsDataset(Dataset):
-    def __init__(self, path_to_loras, path_to_images, image_size=256, padding=424, duplicate=100):
+    def __init__(self, path_to_loras, path_to_images, image_size=256, padding=0, duplicate=100):
         self._eval = False
         self.padding = padding
         self.duplicate = duplicate
         self.path_to_images = path_to_images
         root, dirs, _ = next(os.walk(path_to_loras))
-        self.files_path = [os.path.join(root, dir, "adapter_model.safetensors")
-                           for dir in dirs if "lora" in dir]
+        self.files_path = [os.path.join(root, dir, "adapter_model.safetensors") for dir in dirs if "lora" in dir]
         self.length = len(self.files_path)
         self.param_structure = []
         for name, param in load_file(self.files_path[0], device='cpu').items():
@@ -45,17 +38,17 @@ class Image2SafetensorsDataset(Dataset):
     def __getitem__(self, item):
         item = item % self.length
         file_path = self.files_path[item]
+
         # load image
         label = file_path.split("class")[1][:1]
         dir = None
         for dir in os.listdir(self.path_to_images):
             if label in dir: break
         image_name = random.choice(next(os.walk(os.path.join(self.path_to_images, dir)))[-1])
-        try:
-            image = Image.open(os.path.join(self.path_to_images, dir, image_name)).convert("RGB")
-        except PIL.UnidentifiedImageError:
-            return self[random.randint(0, self.length - 1)]
+        try: image = Image.open(os.path.join(self.path_to_images, dir, image_name)).convert("RGB")
+        except UnidentifiedImageError: return self[random.randint(0, self.length - 1)]
         image = self.transfer(image)
+
         # load param
         diction = load_file(file_path, device='cpu')
         this_param = []
@@ -65,6 +58,8 @@ class Image2SafetensorsDataset(Dataset):
             this_param.append(param.flatten())
         this_param = torch.cat(this_param, dim=0)
         this_param = torch.cat([torch.zeros(self.padding), this_param, torch.zeros(self.padding)], dim=0)
+
+        # return
         if self._eval:
             return image, this_param, int(label), image_name[:-4]
         return image, this_param
