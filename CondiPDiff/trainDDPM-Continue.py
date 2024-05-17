@@ -18,10 +18,10 @@ if __name__ == "__main__":
         # paths setting
         "image_size": 256,
         "dataset": ContiImage2SafetensorsDataset,
-        "path_to_images": "../../datasets/ContiStyles",
-        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA05",
-        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-05.pt",
-        "result_save_path": "./CheckpointDDPM/UNet-Continue-05-1.pt",
+        "path_to_images": "../../datasets/ContiStyle2",
+        "lora_data_path": "../PixArt-StyleTrans-Conti2/CheckpointOriginLoRA05",
+        "vae_checkpoint_path": "./CheckpointVAE/VAE-Continue-05-02.pt",
+        "result_save_path": "./CheckpointDDPM/UNet-Continue-05-02.pt",
         # diffusion structure
         "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,

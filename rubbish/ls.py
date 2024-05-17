@@ -1,26 +1,45 @@
+import torch
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import numpy as np
 import os
-import shutil
+import pickle
 
-input_dir = ("/home/wangkai/cpdiff/datasets/MultiStyles/imagenet-sketch/sketch")
-output_dir = "./ls"
-diction = {}
+def plot_results(reduced_data, labels, title, save_path=None):
+    """
+    Plot the reduced dimensional data, colored by labels, and save the plot to a file if a path is provided.
 
-with open("ls.txt", "r") as f:
-    lines = f.readlines()
+    Args:
+        reduced_data (np.ndarray): Reduced data points, expected to be 2D.
+        labels (np.ndarray): Labels for coloring the points.
+        title (str): Title of the plot.
+        save_path (str, optional): The path where the plot will be saved. If None, the plot will not be saved. Defaults to None.
+    """
+    unique_labels = np.unique(labels)
+    colors = plt.get_cmap('viridis', len(unique_labels))
 
-for line in lines:
-    if len(line) < 3:
-        continue
-    first, prompt = line.split(",", 1)
-    prompt = prompt.replace("\n", "")[1:]
-    folder = first.split(" ")[1]
-    diction[folder] = prompt
+    plt.figure(figsize=(20, 10))
+    plt.xlim(-30, 30)
+    plt.ylim(-5, 5)
+    for i, label in enumerate(unique_labels):
+        mask = (labels == label)
+        plt.scatter(reduced_data[mask, 0], reduced_data[mask, 1], c=colors(i), label=f'Label {label}')
+    plt.title(title)
+    plt.xlabel('Principal Component 1' if title.startswith('PCA') else 'Dimension 1')
+    plt.ylabel('Principal Component 2' if title.startswith('PCA') else 'Dimension 2')
+    plt.legend()
 
-for folder in os.listdir(input_dir):
-    prompt = diction[folder]
-    for i, file in enumerate(os.listdir(os.path.join(input_dir, folder))):
-        file_path = os.path.join(input_dir, folder, file)
-        output_path = os.path.join(output_dir, f"{prompt.replace(',', '')} {i}.jpg")
-        print(file_path, output_path)
-        shutil.move(file_path, output_path)
-        #exit()
+    if save_path:
+        # Ensure the directory exists before saving
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path)
+        print(f"Plot saved to: {save_path}")
+    else:
+        plt.show()
+
+
+
+with open("/CondiPDiff/continue-latent-tsne-dense.data", "rb") as f:
+    diction = pickle.load(file=f)
+plot_results(**diction, save_path="continue-latent-tsne-dense.jpg")
