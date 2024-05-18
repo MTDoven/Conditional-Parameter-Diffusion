@@ -1,3 +1,4 @@
+import torch
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
@@ -17,12 +18,12 @@ def visualize_data(tensor_data, labels, pca=True, tsne=True, save_path=None):
         plot_results(pca_results, labels, "PCA Visualization", save_path)
 
     if tsne:
-        tsne_model = TSNE(n_components=2, random_state=42, verbose=0, early_exaggeration=12, perplexity=40)
+        tsne_model = TSNE(n_components=2, random_state=42, verbose=0, early_exaggeration=12, perplexity=20)
         tsne_results = tsne_model.fit_transform(flattened_data)
         plot_results(tsne_results, labels, "t-SNE Visualization", save_path)
 
 
-def plot_results(reduced_data, labels, title, save_path=None, x_min_max_y_min_max=(-30, 30, -5, 5)):
+def plot_results(reduced_data, labels, title, save_path=None, x_min_max_y_min_max=None):
     diction = {"reduced_data": reduced_data, "labels": labels, "title": title}
     with open(save_path+".data", "wb") as f:
         pickle.dump(diction, file=f)
@@ -31,8 +32,9 @@ def plot_results(reduced_data, labels, title, save_path=None, x_min_max_y_min_ma
     colors = plt.get_cmap('viridis', len(unique_labels))
 
     plt.figure(figsize=(10, 10))
-    plt.xlim(x_min_max_y_min_max[0], x_min_max_y_min_max[1])
-    plt.ylim(x_min_max_y_min_max[2], x_min_max_y_min_max[3])
+    if x_min_max_y_min_max is not None:
+        plt.xlim(x_min_max_y_min_max[0], x_min_max_y_min_max[1])
+        plt.ylim(x_min_max_y_min_max[2], x_min_max_y_min_max[3])
     for i, label in enumerate(unique_labels):
         mask = (labels == label)
         plt.scatter(reduced_data[mask, 0], reduced_data[mask, 1], c=colors(i), label=f'Label {label}')
@@ -49,7 +51,38 @@ def plot_results(reduced_data, labels, title, save_path=None, x_min_max_y_min_ma
         plt.show()
 
 
-if __name__ == "__main__":
+class Log:
+    logs = []
+
+    @classmethod
+    def to_log(cls, array):
+        array = array.clone().flatten().detach().cpu().numpy()
+        cls.logs.append(array)
+
+    @classmethod
+    def to_save(cls, file_path):
+        with open(file_path, 'wb') as f:
+            pickle.dump(cls.logs, f)
+
+
+if __name__ == "__main__" and True:
     with open("/home/wangkai/cpdiff/condipdiff/CondiPDiff/continue-latent-tsne-sparse.data", "rb") as f:
         diction = pickle.load(file=f)
     plot_results(**diction, save_path="./result.jpg")
+
+if __name__ == "__main__" and False:
+    num_datas = 10
+    array = []
+    for i in range(num_datas):
+        with open(f"/home/wangkai/cpdiff/condipdiff/CondiPDiff/logs{i}.data", "rb") as f:
+            array_list = pickle.load(file=f)
+            this_array = torch.from_numpy(np.array(array_list))
+            this_array = this_array[0:][::4, :]
+            array.append(this_array)
+    array = torch.cat(array, dim=0)
+    print("array shape:", array.shape)
+    label = torch.zeros(size=(len(this_array),))
+    label = torch.cat([label+i for i in range(num_datas)], dim=0)
+    with open("./all_data.data", "wb") as f:
+        pickle.dump({"data": array, "label": label}, f)
+    visualize_data(array, label, pca=False, tsne=True, save_path="diffusion-latent-tsne-5.jpg")
