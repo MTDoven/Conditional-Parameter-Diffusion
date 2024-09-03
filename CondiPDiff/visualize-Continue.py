@@ -16,10 +16,10 @@ if __name__ == "__main__":
         "dataset": ContiImage2SafetensorsDataset,
         "UNet_path": "./CheckpointDDPM/UNet-Continue-05-01.pt",
         "VAE_path": "./CheckpointVAE/VAE-Continue-05-01.pt",
-        "path_to_loras": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA",
+        "path_to_loras": "../PixArt-StyleTrans-Conti1/CheckpointOriginLoRA",
         "path_to_images": "../../datasets/ContiStyles",
-        "path_to_save": "../PixArt-StyleTrans-Conti/CheckpointGenLoRA",
-        "adapter_config_path": "../PixArt-StyleTrans-Conti/CheckpointStyleDataset/adapter_config.json",
+        "path_to_save": "../PixArt-StyleTrans-Conti1/CheckpointGenLoRA",
+        "adapter_config_path": "../PixArt-StyleTrans-Conti1/CheckpointStyleDataset/adapter_config.json",
         # ddpm structure
         "num_channels": [64, 128, 256, 512, 768, 1024, 1024, 32],
         "T": 1000,
@@ -94,14 +94,14 @@ if __name__ == "__main__":
 ################################# Code for Visualize ################################
 
     # prepare data
-    inserting = 4
+    inserting = 2
     condition = []
     params = []
     for index in range(0, len(dataset), inserting):
         image, param, item, prompt = dataset[index]
         if (item // 100) % 1 == 0:
             condition.append(image)
-        if (item // 100) % 2 == 0 and item % 3 == 0:
+        if (item // 100) % 2 == 0 and item % 1 == 0:
             params.append(param)
         print("\r", index, item, prompt)
     condition = torch.stack(condition).to(device)
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     print("origin:", len(origin), origin.max(), "    sampled:", len(sampled), sampled.max())
     input_data = torch.cat((origin, sampled), dim=0)
     input_label = torch.cat((torch.zeros(size=(len(origin),)), torch.ones(size=(len(sampled),))), dim=0)
-    visualize_data(input_data.cpu(), input_label.cpu(), pca=False, tsne=True, save_path="./generate-latent-tsne.jpg")
+    visualize_data(input_data.cpu(), input_label.cpu(), pca=True, tsne=False, save_path="./result.jpg")
 
 
 

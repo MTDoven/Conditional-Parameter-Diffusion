@@ -66,9 +66,9 @@ class Log:
 
 
 if __name__ == "__main__" and True:
-    with open("/home/wangkai/cpdiff/condipdiff/CondiPDiff/continue-latent-tsne-sparse.data", "rb") as f:
+    with open("./result.jpg.data", "rb") as f:
         diction = pickle.load(file=f)
-    plot_results(**diction, save_path="./result.jpg")
+    plot_results(**diction, save_path="./result.jpg", x_min_max_y_min_max=(-1.7, 1.7, -0.1, 0.1))
 
 if __name__ == "__main__" and False:
     num_datas = 10
