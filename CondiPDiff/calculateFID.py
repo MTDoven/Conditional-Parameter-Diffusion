@@ -1,6 +1,4 @@
 import torch_fidelity
-import os
-os.environ["CUDA_VISIBLE_DEVICE"] = "0"
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 

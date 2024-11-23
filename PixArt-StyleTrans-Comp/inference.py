@@ -46,8 +46,7 @@ if __name__ == "__main__":
         "save_sampled_images_path": "./temp",
         "prompts": ["A baby elephant standing next to it's parents",
                     "a lamp post and a fire hydrant in front of a bench",
-                    "A grain on a train track with multiple cars attached",
-                    "Two girls playing in the beach.",],
+                    "A grain on a train track with multiple cars attached"],
         "dtype": torch.float16,
     }
 

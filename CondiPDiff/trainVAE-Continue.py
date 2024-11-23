@@ -18,8 +18,8 @@ if __name__ == "__main__":
         "dataset": ContiImage2SafetensorsDataset,
         "checkpoint": None,
         "image_data_path": "../../datasets/ContiStyle2",
-        "lora_data_path": "../PixArt-StyleTrans-Conti2/CheckpointOriginLoRA05",
-        "result_save_path": "./CheckpointVAE/VAE-Continue-05-02.pt",
+        "lora_data_path": "../PixArt-StyleTrans-Conti/CheckpointOriginLoRA05",
+        "result_save_path": "./CheckpointVAE/VAE-Continue.pt",
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
         "d_latent": 256,

@@ -2,7 +2,6 @@ import torch
 from torch.utils.data import Dataset
 from safetensors.torch import load_file, save_file
 from torchvision import transforms
-
 from functools import reduce
 from PIL import UnidentifiedImageError
 from PIL import Image

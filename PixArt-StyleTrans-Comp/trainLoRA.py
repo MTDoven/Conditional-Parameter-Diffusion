@@ -48,7 +48,7 @@ from diffusers.training_utils import compute_snr
 from diffusers.utils import check_min_version, is_wandb_available
 from diffusers.utils.import_utils import is_xformers_available
 
-os.environ['WANDB_API_KEY'] = "b8a4b0c7373c8bba8f3d13a2298cd95bf3165260"
+
 
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.

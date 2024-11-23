@@ -1,12 +1,10 @@
 from Model.VAE import OneDimVAE as VAE
 from Dataset import Image2SafetensorsDataset
-
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.cuda.amp import autocast as autocast
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 import torch
-
 from tqdm.auto import tqdm
 import wandb
 
@@ -14,14 +12,14 @@ import wandb
 if __name__ == "__main__":
     config = {
         # device setting
-        "device": "cuda:5",
+        "device": "cuda",
         # paths setting
         "image_size": 256,
         "dataset": Image2SafetensorsDataset,
         "checkpoint": None,
         "image_data_path": "../../datasets/FIDStyles",
         "lora_data_path": "../PixArt-StyleTrans-Comp/CheckpointTrainLoRA",
-        "result_save_path": "./CheckpointVAE/VAE-Transfer-04.pt",
+        "result_save_path": "./CheckpointVAE/VAE-Transfer.pt",
         # vae structure
         "d_model": [16, 32, 64, 128, 256, 384, 512, 768, 1024, 64],
         "d_latent": 256,
