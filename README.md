@@ -1,4 +1,6 @@
-# Codes of vision parts in [Conditional LoRA Parameter Generation](https://arxiv.org/abs/2408.01415).
+# Conditional-Parameter-Diffusion
+Codes of vision parts in [Conditional LoRA Parameter Generation](https://github.com/Jinxiaolong1129/Cond-PDiff).
+
 
 ## Usage
 
